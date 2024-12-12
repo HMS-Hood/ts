@@ -1,0 +1,28 @@
+{
+  "name": "puppeteer-automation",
+  "version": "1.0.0",
+  "description": "An automated testing project based on Puppeteer with TypeScript",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "lint": "eslint . --ext .ts",
+    "format": "prettier --write ."
+  },
+  "keywords": ["puppeteer", "typescript", "automation", "testing"],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "puppeteer": "^21.3.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.8.0",
+    "typescript": "^5.3.0",
+    "ts-node": "^10.9.1",
+    "eslint": "^8.53.0",
+    "@typescript-eslint/eslint-plugin": "^6.7.0",
+    "@typescript-eslint/parser": "^6.7.0",
+    "prettier": "^3.1.0"
+  }
+}

@@ -1,0 +1,58 @@
+Arguments: 
+  d:\Program Files\nodejs\node.exe C:\Users\chlhf\AppData\Roaming\npm\node_modules\yarn\bin\yarn.js install
+
+PATH: 
+  D:\Program Files\Java\jdk-17\bin;C:\Program Files\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\ProgramData\Oracle\Java\javapath;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\iCLS\;C:\Program Files\Intel\Intel(R) Management Engine Components\iCLS\;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\DAL;C:\Program Files\Intel\Intel(R) Management Engine Components\DAL;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\IPT;C:\Program Files\Intel\Intel(R) Management Engine Components\IPT;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Users\chlhf\AppData\Local\Atlassian\SourceTree\git_local\bin;D:\tools\go\bin;D:\tools\protoc-3.6.1-win32\bin;C:\Program Files\Intel\WiFi\bin\;C:\Program Files\Common Files\Intel\WirelessCommon\;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;D:\Program Files\TortoiseSVN\bin;C:\Program Files\NVIDIA Corporation\NVIDIA NvDLISR;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\Microsoft SQL Server\130\Tools\Binn\;C:\Program Files\Microsoft SQL Server\150\Tools\Binn\;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn\;C:\Program Files\dotnet\;d:\nvm;d:\Program Files\nodejs;e:\Ruby33-x64\bin;D:\Users\chlhf\AppData\Local\Programs\Python\Python310\Scripts\;C:\Users\chlhf\AppData\Local\Microsoft\WindowsApps;D:\apache-maven-3.3.3\bin;d:\Users\chlhf\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\chlhf\.dotnet\tools;D:\Users\chlhf\AppData\Local\Programs\Python\Python310\;D:\Python27;C:\Users\chlhf\AppData\Roaming\npm;d:\nvm;d:\Program Files\nodejs
+
+Yarn version: 
+  1.22.19
+
+Node version: 
+  20.11.1
+
+Platform: 
+  win32 x64
+
+Trace: 
+  Error: connect ECONNABORTED 192.168.200.120:80
+      at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1595:16)
+
+npm manifest: 
+  {
+    "name": "puppeteer-automation",
+    "version": "1.0.0",
+    "description": "An automated testing project based on Puppeteer with TypeScript",
+    "main": "dist/index.js",
+    "scripts": {
+      "build": "tsc",
+      "start": "node dist/index.js",
+      "dev": "ts-node src/index.ts",
+      "test": "jest",
+      "lint": "eslint . --ext .ts",
+      "format": "prettier --write ."
+    },
+    "keywords": ["puppeteer", "typescript", "automation", "testing"],
+    "author": "Your Name",
+    "license": "MIT",
+    "dependencies": {
+      "puppeteer": "^21.3.8"
+    },
+    "devDependencies": {
+      "@types/node": "^20.8.0",
+      "@types/puppeteer": "^21.3.0",
+      "typescript": "^5.3.0",
+      "ts-node": "^10.9.1",
+      "eslint": "^8.53.0",
+      "@typescript-eslint/eslint-plugin": "^6.7.0",
+      "@typescript-eslint/parser": "^6.7.0",
+      "jest": "^29.8.0",
+      "ts-jest": "^29.1.1",
+      "prettier": "^3.1.0"
+    }
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile
