@@ -1,41 +1,41 @@
 import { ElementHandle, Frame, Point } from "puppeteer";
-import { myUtil, delay, Action, ChoiseAction, CustomAction, LongAction, TestAction } from "./utils";
+import { myUtil, delay } from "./utils";
+import { Action } from "./action/Action";
+import { ChoiseAction } from "./action/OptionalAction";
+import { CustomAction } from "./action/CustomAction";
+import { LongWaitAction } from "./action/LongWaitAction";
+import { getChest } from "./common";
 
 /**
- * 竞技场
+ * enter colosseum
  */
 const enterColosseum = new Action('enter-colosseum', 'div.main-controls .dgrid .dgrid-item:nth-of-type(4) .ditem__img');
 
 /**
- * 广告
- */
-const adv = new Action('adv', 'div.popup-layer.fullscreen', 'div.popup-layer.fullscreen div.btn_round.icn_x-icon.close');
-
-/**
- * 左下侧英雄列表图标
+ * enter collection
  */
 const collection = new Action("collection", "div.main-button.collection");
 
 /**
- * 头部玩具菜单
+ * select toys bar
  */
 const toys = new ChoiseAction("toys", "div.tabs__item.icn_toys", "div.tabs__item.icn_toys", "div.tabs__item.icn_toys.active");
 
 /**
- * 移除所有玩具
+ * remove all toys
  */
 const removeAllToys = new ChoiseAction("remove-all-toys", "div.best-set div.btn", "div.best-set div.btn.blue", 
   "div.best-set div.btn.gray");
 
 /**
- * 退出玩具选择
+ * quite collection
  */
 const quiteToys = new Action("quite-toys", "div.popup-layer.fullscreen", "div.popup-layer.fullscreen div.btn_round.icn_back"); 
 
 /**
- * 进入战前部署
+ * select target in colosseum
  */
-const enterFight = new CustomAction("enter-fight", "div.colosseum-info", async(frame: Frame) => {
+const selectTarget = new CustomAction("select-target", "div.colosseum-info", async(frame: Frame) => {
   try {
     // 等待 canvas 元素出现并获取其句柄
     const canvasHandle = await frame.waitForSelector('#canvas-layer1');
@@ -44,7 +44,7 @@ const enterFight = new CustomAction("enter-fight", "div.colosseum-info", async(f
     if (canvasHandle) {
       const boundingBox = await canvasHandle.boundingBox();
       if (boundingBox) {
-        // 计算点击坐标，假设你要点击 canvas 的中间
+        // 计算点击坐标，中间偏左，即最左侧的目标
         const x = boundingBox.x + boundingBox.width / 5;
         const y = boundingBox.y + boundingBox.height / 2;
 
@@ -62,7 +62,7 @@ const enterFight = new CustomAction("enter-fight", "div.colosseum-info", async(f
 });
 
 /**
- * 确认进入部署
+ * enter deploy
  */
 const deploy = new Action('deploy', 'div.btn.glow-green.hidden', 'div.btn.glow-green.hidden div.btn-text');
 
@@ -77,7 +77,7 @@ const getPoint = async (element: ElementHandle<Element>): Promise<Point | undefi
 }
 
 /**
- * 设置人员及玩具
+ * deploy members and toys
  */
 const setDeck = new CustomAction('set-deck', 'div.colosseum-deck', async (frame: Frame) => {
   const cardsList = await frame.$('div.cards-list div.cards-list__slot div.item-container');
@@ -109,50 +109,44 @@ const setDeck = new CustomAction('set-deck', 'div.colosseum-deck', async (frame:
 })
 
 /**
- * 确认战斗
+ * final enter
  */
 const attack = new Action('attack', 'div.player-set', 'div.player-set div.btn.blue');
 
 /**
- * 确认战斗胜利
+ * confirm victory
  */
-const confirmVictory = new LongAction('confirm-victory', 'div.reward-box', 'div.reward-box div.btn.blue');
+const confirmVictory = new LongWaitAction('confirm-victory', 'div.reward-box', 'div.reward-box div.btn.blue');
 
 /**
- * 领取竞技场完成一个场地后的奖励
+ * get colosseum reward
  */
 const getColosseumReward = new Action('get-colosseum-reward', 'div.popup-layer.dialog-fullscreen', 'div.popup-layer.dialog-fullscreen div.btn.green');
 
 /**
- * 选取新的竞技场场地
+ * check new colosseum
  */
 const colosseumClean = new Action('colosseum-clean', 'div.colosseum-map__arenas', 'div.colosseum-map__arenas div.colosseum-map__item:not(.locked)');
 
 /**
- * 打开宝箱
+ * enter colosseum from main, and do colosseum with times
+ * @param frame 
+ * @param times count of do colosseum
  */
-const getChest = new Action('get-chest', 'div.gatcha-inside', 'div.gatcha-inside div.btn.blue');
+const doColosseum = async (frame: Frame, times: number = 1) => {
+  await enterColosseum.doAction(frame);
+  for (let i = 0; i <= times; i++) {
+    await collection.doAction(frame);
+    await toys.doAction(frame);
+    await removeAllToys.doAction(frame);
+    await quiteToys.doAction(frame);
+    await selectTarget.doAction(frame);
+    await deploy.doAction(frame);
+    await setDeck.doAction(frame);
+    await attack.doAction(frame);
+    await confirmVictory.doAction(frame);
+    await getChest.doAction(frame);
+  }
+}
 
-const testChest = new TestAction('get-chest', 'div.gatcha-inside', 'div.gatcha-inside div.btn.blue');
-
-/**
- * 进入爬塔战斗
- */
-const enterTower = new Action('enter-tower', 'div.main-controls .dgrid .dgrid-item:nth-of-type(5) .ditem__img');
-
-/**
- * 打开塔内的宝箱
- */
-const chestList = new TestAction('chest-list', 'div.chests-slots', 'div.chests-slots div.chest-slot.glow:not(.offer)');
-
-/**
- * 开始塔内战斗
- */
-const fightTower = new Action('fight-tower', 'div.tb-controls.league', 'div.tb-controls.league div.btn.glow-green.hidden div.btn-text');
-
-const confirmTowerVictory = new LongAction('confirm-tower-victory', 'ul.reward-box', 'ul.reward-box div.btn.blue');
-
-const removeChest = new Action('remove-chest', 'div.popup.tower-chest-open.remove', 'div.popup.tower-chest-open.remove div.btn.glow-red');
-
-export { enterColosseum, adv, collection, toys, removeAllToys, quiteToys, enterFight, deploy, setDeck, attack, confirmVictory, getChest }
-export { enterTower, chestList, fightTower, testChest, confirmTowerVictory, removeChest }
+export { doColosseum }

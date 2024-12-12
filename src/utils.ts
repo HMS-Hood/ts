@@ -1,4 +1,5 @@
 import { ElementHandle, Frame, Page, Point } from "puppeteer";
+import { Action } from "./action/Action";
 
 const delay = (time: number = 1000) => {
   return new Promise(resolve => setTimeout(resolve, time));
@@ -64,191 +65,9 @@ class Util {
   }
 }
 
-/**
- * 操作动作
- */
-class Action {
-  /**
-   * 活动编码，唯一标识
-   */
-  code: string;
 
-  /**
-   * 等待判断选择器
-   */  
-  selector: string;
 
-  /**
-   * 点击判断选择器
-   */
-  clickSelector: string;
 
-  /**
-   * 动作执行
-   */
-  act?: (frame: Frame) => Promise<void>;
-
-  constructor(code: string, selector: string, clickSelector?: string) {
-    this.code = code;
-    this.selector = selector;
-    this.clickSelector = clickSelector??selector;
-  }
-
-  async doAction(baseObj: Frame) {
-    console.log(`wait action :${this.code}`)
-    await baseObj.waitForSelector(this.selector)
-    console.log(`wait action success:${this.code}`)
-    let success = false;
-    let done = false;
-    while (!success) {
-      await delay();
-      console.log(`do action try:${this.code}`)
-      const tagObj = await baseObj.$(this.selector);
-      const tagObjEnable = await isEnable(tagObj);
-      const clickObj = await baseObj.$(this.clickSelector);
-      const clickObjEnable = await isEnable(clickObj);
-      if (tagObj && tagObjEnable && clickObj && clickObjEnable) {
-        console.log(`do action try:1`)
-        try {
-          await clickObj.click();
-        } catch(e) {
-          console.log(e);
-        }
-        done = true;
-        console.log(`do action success:${this.code}`)
-      } else {
-        console.log(`do action try:2`)
-        if (done) success = true;
-      }
-    }
-  }
-}
-
-class ChoiseAction extends Action {
-  choiseSelector: string;
-
-  constructor (code: string, selector: string, clickSelector: string, choiseSelector: string) {
-    super(code, selector, clickSelector);
-    this.choiseSelector = choiseSelector;
-  }
-
-  async doAction(baseObj: Frame) {
-    await baseObj.waitForSelector(this.selector)
-    console.log(`wait action success:${this.code}`)
-    let success = false;
-    let done = false;
-    while (!success) {
-      await delay();
-      console.log(`do action try:${this.code}`)
-      const tagObj = await baseObj.$(this.selector);
-      const tagObjEnable = await isEnable(tagObj);
-      const clickObj = await baseObj.$(this.clickSelector);
-      const clickObjEnable = await isEnable(clickObj);
-      const passObj = await baseObj.$(this.choiseSelector);
-      const passObjEnable = await isEnable(passObj);
-      if (tagObj && tagObjEnable && passObj && passObjEnable) {
-        success = true;
-        console.log(`do action success 2:${this.code}`)
-      } else if (tagObj && tagObjEnable && clickObj && clickObjEnable) {
-        console.log(`do action try 1`)
-        try {
-          await clickObj.click();
-        } catch(e) {
-          console.log(e);
-        }
-        done = true;
-        console.log(`do action success:${this.code}`)
-      } else {
-        if (done) {
-          success = true;
-          console.log(`do action success 3:${this.code}`)
-        } else {
-          console.log(`next because: tagObj=${tagObj}, enable=${tagObjEnable}, clickObj=${clickObj},enable=${clickObjEnable}`)
-        }
-      }
-    }
-  }
-}
-
-class CustomAction extends Action {
-  act: (frame: Frame) => Promise<void>;
-
-  constructor (code: string, selector: string, act: (frame: Frame) => Promise<void>) {
-    super(code, selector);
-    this.act = act;
-  }
-
-  async doAction(baseObj: Frame) {
-    await this.act(baseObj);
-  }
-}
-
-class LongAction extends Action {
-  async doAction(baseObj: Frame) {
-    console.log(`wait action :${this.code}`)
-    await baseObj.waitForSelector(this.selector, { timeout: 90000 })
-    console.log(`wait action success:${this.code}`)
-    let success = false;
-    let done = false;
-    while (!success) {
-      await delay();
-      console.log(`do action try:${this.code}`)
-      const tagObj = await baseObj.$(this.selector);
-      const tagObjEnable = await isEnable(tagObj);
-      const clickObj = await baseObj.$(this.clickSelector);
-      const clickObjEnable = await isEnable(clickObj);
-      if (tagObj && tagObjEnable && clickObj && clickObjEnable) {
-        console.log(`do action try:1`)
-        try {
-          await clickObj.click();
-        } catch(e) {
-          console.log(e);
-        }
-        done = true;
-        console.log(`do action success:${this.code}`)
-      } else {
-        console.log(`do action try:2`)
-        if (done) success = true;
-      }
-    }
-  }
-}
-
-class TestAction extends Action {
-  async testAction(baseObj: Frame) {
-    console.log(`wait action :${this.code}`)
-    await baseObj.waitForSelector(this.selector)
-    console.log(`wait action success:${this.code}`)
-    const clickObj = await baseObj.$(this.clickSelector);
-    if (clickObj) {
-      let success = false;
-      let done = false;
-      while (!success) {
-        await delay();
-        console.log(`do action try:${this.code}`)
-        const tagObj = await baseObj.$(this.selector);
-        const tagObjEnable = await isEnable(tagObj);
-        const clickObj = await baseObj.$(this.clickSelector);
-        const clickObjEnable = await isEnable(clickObj);
-        if (tagObj && tagObjEnable && clickObj && clickObjEnable) {
-          console.log(`do action try:1`)
-          try {
-            await clickObj.click();
-          } catch(e) {
-            console.log(e);
-          }
-          done = true;
-          console.log(`do action success:${this.code}`)
-        } else {
-          console.log(`do action try:2`)
-          if (done) success = true;
-        }
-      }
-      return true;
-    } 
-    return false;
-  }
-}
 
 let myUtil: Util;
 
@@ -256,4 +75,4 @@ const init = (page: Page, frame: Frame) => {
   myUtil = new Util(page, frame);
 }
 
-export { myUtil, init, delay, Action, ChoiseAction, CustomAction, LongAction, TestAction }
+export { myUtil, init, delay, isEnable }

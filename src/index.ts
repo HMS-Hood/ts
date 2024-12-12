@@ -1,10 +1,9 @@
 import puppeteer from 'puppeteer';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import { init, myUtil } from './utils';
-import { enterColosseum, adv, collection, toys, removeAllToys, enterFight, quiteToys, deploy, setDeck,
-	attack, confirmVictory, getChest, enterTower, chestList, fightTower, testChest, confirmTowerVictory
- } from './main';
+import { adv } from './common';
+import { doTower } from './tower';
+import { doColosseum } from './colosseum';
 
 // const __filename = fileURLToPath(import.meta.url);
 // const __dirname = path.dirname('d:\\personal\\ts');
@@ -41,31 +40,12 @@ import { enterColosseum, adv, collection, toys, removeAllToys, enterFight, quite
 	if (innerFrame) init(page, innerFrame);
 
 	try {
-		// await innerFrame?.waitForSelector('div.main-controls .dgrid .dgrid-item:nth-of-type(4) .ditem__img');
-		// await innerFrame?.locator('div.main-controls .dgrid .dgrid-item:nth-of-type(4) .ditem__img').click();
-		await myUtil.doActionWithOptional(adv, enterTower);
 		if (innerFrame) {
-			for (let i = 0; i <= 300; i++) {
-				// await myUtil.doActionWithOptional(getChest, collection);
-				// // await collection.doAction(innerFrame);
-				// await toys.doAction(innerFrame);
-				// await removeAllToys.doAction(innerFrame);
-				// await quiteToys.doAction(innerFrame);
-				// await enterFight.doAction(innerFrame);
-				// await deploy.doAction(innerFrame);
-				// await setDeck.doAction(innerFrame);
-				// await attack.doAction(innerFrame);
-				// await confirmVictory.doAction(innerFrame);
-				// await getChest.doAction(innerFrame);
+      adv.doAction(innerFrame);
+			
+      await doTower(innerFrame, 10);
 
-				const chest = await chestList.testAction(innerFrame);
-				if (chest) {
-					getChest.doAction(innerFrame);
-					testChest.testAction(innerFrame);
-				}
-				await fightTower.doAction(innerFrame);
-				await confirmTowerVictory.doAction(innerFrame);
-			}
+      // await doColosseum(innerFrame, 100);
 		}
 	} catch (e) {
 		console.log(innerFrame?.url());
