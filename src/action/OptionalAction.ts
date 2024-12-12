@@ -1,5 +1,5 @@
 import { Frame } from "puppeteer";
-import { Action } from "./Action";
+import { Action, ActionContext } from "./Action";
 import { delay, isEnable } from "../utils";
 
 /**
@@ -14,7 +14,8 @@ class OptionalAction extends Action {
     this.choiseSelector = choiseSelector;
   }
 
-  async doAction(baseObj: Frame) {
+  async doAction(context: ActionContext) {
+    const { baseObj } = context;
     await baseObj.waitForSelector(this.selector)
     console.log(`wait action success:${this.code}`)
     let success = false;

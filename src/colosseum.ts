@@ -1,10 +1,12 @@
 import { ElementHandle, Frame, Point } from "puppeteer";
 import { myUtil, delay } from "./utils";
-import { Action } from "./action/Action";
+import { Action, ActionContext } from "./action/Action";
 import { ChoiseAction } from "./action/OptionalAction";
 import { CustomAction } from "./action/CustomAction";
 import { LongWaitAction } from "./action/LongWaitAction";
 import { getChest } from "./common";
+import { LoopActionQueue } from "./action/LoopActionQueue";
+import { ActionQueue } from "./action/ActionQueue";
 
 /**
  * enter colosseum
@@ -35,7 +37,8 @@ const quiteToys = new Action("quite-toys", "div.popup-layer.fullscreen", "div.po
 /**
  * select target in colosseum
  */
-const selectTarget = new CustomAction("select-target", "div.colosseum-info", async(frame: Frame) => {
+const selectTarget = new CustomAction("select-target", "div.colosseum-info", async(context: ActionContext) => {
+  const { baseObj: frame } = context;
   try {
     // 等待 canvas 元素出现并获取其句柄
     const canvasHandle = await frame.waitForSelector('#canvas-layer1');
@@ -79,7 +82,8 @@ const getPoint = async (element: ElementHandle<Element>): Promise<Point | undefi
 /**
  * deploy members and toys
  */
-const setDeck = new CustomAction('set-deck', 'div.colosseum-deck', async (frame: Frame) => {
+const setDeck = new CustomAction('set-deck', 'div.colosseum-deck', async (context: ActionContext) => {
+  const { baseObj: frame } = context;
   const cardsList = await frame.$('div.cards-list div.cards-list__slot div.item-container');
   if (cardsList) {
     const startPoint = await getPoint(cardsList);
@@ -99,9 +103,9 @@ const setDeck = new CustomAction('set-deck', 'div.colosseum-deck', async (frame:
         await myUtil.mouseUp();
         await delay(3000)
         await myUtil.mouseClick(endPoint.x, endPoint.y);
-        await new ChoiseAction('set-girl', 'div.card-menu__items', 'div.card-menu__items div.card-menu__item:nth-of-type(3)', 'div.card-menu__items div.card-menu__item:nth-of-type(3).active').doAction(frame);
-        await new ChoiseAction('set-toys', 'div.toys__buttons', 'div.toys__buttons div.btn:nth-of-type(1)', 'div.toys__buttons div.btn.blue:nth-of-type(2)').doAction(frame);
-        await new Action('quit-toys', 'div.popup.card-details', 'div.popup.card-details div.btn_round.icn_x-icon.close').doAction(frame);
+        await new ChoiseAction('set-girl', 'div.card-menu__items', 'div.card-menu__items div.card-menu__item:nth-of-type(3)', 'div.card-menu__items div.card-menu__item:nth-of-type(3).active').doAction(context);
+        await new ChoiseAction('set-toys', 'div.toys__buttons', 'div.toys__buttons div.btn:nth-of-type(1)', 'div.toys__buttons div.btn.blue:nth-of-type(2)').doAction(context);
+        await new Action('quit-toys', 'div.popup.card-details', 'div.popup.card-details div.btn_round.icn_x-icon.close').doAction(context);
         console.log(`delay end`)
       }
     }
@@ -133,20 +137,13 @@ const colosseumClean = new Action('colosseum-clean', 'div.colosseum-map__arenas'
  * @param frame 
  * @param times count of do colosseum
  */
-const doColosseum = async (frame: Frame, times: number = 1) => {
-  await enterColosseum.doAction(frame);
-  for (let i = 0; i <= times; i++) {
-    await collection.doAction(frame);
-    await toys.doAction(frame);
-    await removeAllToys.doAction(frame);
-    await quiteToys.doAction(frame);
-    await selectTarget.doAction(frame);
-    await deploy.doAction(frame);
-    await setDeck.doAction(frame);
-    await attack.doAction(frame);
-    await confirmVictory.doAction(frame);
-    await getChest.doAction(frame);
-  }
+const doColosseum = (times: number = 1) => {
+  const loopQueue = new LoopActionQueue([
+    collection, toys, removeAllToys, quiteToys,
+    selectTarget, deploy, setDeck,
+    attack, confirmVictory, getChest,
+  ], times);
+  return new ActionQueue([ enterColosseum, loopQueue ]);
 }
 
 export { doColosseum }

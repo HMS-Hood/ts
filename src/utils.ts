@@ -21,29 +21,6 @@ class Util {
     this.baseObj = frame;
   }
 
-  async doActionWithOptional(optionalAction: Action, action: Action) {
-    const promiseOpti = this.getPromise(optionalAction);
-    const promise = this.getPromise(action);
-    const result = await Promise.race([promiseOpti, promise]).catch((e) => {
-      console.log(e);
-    });
-    if (result) {
-      console.log(`do optional result:${result.code}`)
-      if (result.code === optionalAction.code) {
-        await optionalAction.doAction(this.baseObj);
-        console.log(`do optional success:${optionalAction.code}`)
-      } 
-      await action.doAction(this.baseObj);
-    }
-  };
-
-  getPromise(action: Action): Promise<{ code: string, handle: ElementHandle<Element> | null}> {
-    return this.baseObj.waitForSelector(action.selector).then(res => ({
-      code: action.code,
-      handle: res,
-    }));
-  }
-
   mouseClick(x: number, y: number): Promise<void> {
     return this.page.mouse.click(x, y);
   }

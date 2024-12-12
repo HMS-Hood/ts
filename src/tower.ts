@@ -4,6 +4,8 @@ import { LongWaitAction } from "./action/LongWaitAction";
 import { TestAction } from "./action/TestAction";
 import { getChest } from "./common";
 import { SkipableAction } from "./action/SkipableAction";
+import { LoopActionQueue } from "./action/LoopActionQueue";
+import { ActionQueue } from "./action/ActionQueue";
 
 
 /**
@@ -34,16 +36,13 @@ const confirmTowerVictory = new LongWaitAction('confirm-tower-victory', 'ul.rewa
 /**
  * abondant chest
  */
-const removeChest = new SkipableAction('remove-chest', 'div.popup.tower-chest-open.remove', 'div.popup.tower-chest-open.remove div.btn.glow-red', 'div.tb-controls.league');
+const removeChest = new SkipableAction('remove-chest', 'div.popup.tower-chest-open.remove', 'div.popup.tower-chest-open.remove div.btn.glow-red');
 
-const doTower = async (frame: Frame, times: number = 1) => {
-  await enterTower.doAction(frame);
-  for (let i = 1; i <= times; i++) {
-    await collectChest.doAction(frame);
-    await fightTower.doAction(frame);
-    await confirmTowerVictory.doAction(frame);
-    await removeChest.doAction(frame);  
-  }
+const doTower = (times: number = 1) => {
+  const loopQueue = new LoopActionQueue([
+    collectChest, fightTower, confirmTowerVictory, removeChest
+  ], times);
+  return new ActionQueue([enterTower, loopQueue]);
 }
 
 export { doTower }

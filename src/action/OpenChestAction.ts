@@ -1,5 +1,5 @@
 import { Frame } from "puppeteer";
-import { Action } from "./Action";
+import { Action, ActionContext } from "./Action";
 import { delay, isEnable } from "../utils";
 
 /**
@@ -10,14 +10,16 @@ class OpenChestAction extends Action {
     super('get-chest', 'div.gatcha-inside', 'div.gatcha-inside div.btn.blue');
   }
 
-  async doAction(baseObj: Frame) {
+  async doAction(context: ActionContext) {
+    const { baseObj } = context;
     console.log(`wait action :${this.code}`)
     await baseObj.waitForSelector(this.selector, this.waitTimeOutOption);
     console.log(`wait action success:${this.code}`)
-    await this.doClick(baseObj);
+    await this.doClick(context);
   }
 
-  async doClick(baseObj: Frame) {
+  async doClick(context: ActionContext) {
+    const { baseObj } = context;
     let success = false;
     while (!success) {
       await delay();
@@ -41,7 +43,7 @@ class OpenChestAction extends Action {
       }
     }
     if (this.subActions) this.subActions.forEach(async action => {
-      await action.doAction(baseObj);
+      await action.doAction(context);
     })
   }
 }

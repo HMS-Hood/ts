@@ -1,10 +1,20 @@
 import { Frame, WaitForSelectorOptions } from "puppeteer";
 import { delay, isEnable } from "../utils";
 
+type ActionContext = {
+  baseObj: Frame,
+  nextAction?: Action,
+}
+
+interface CanDo {
+  doAction(context: ActionContext): Promise<void>;
+  getFirstAction(): Action | undefined;
+}
+
 /**
  * 操作动作
  */
-class Action {
+class Action implements CanDo {
   /**
    * 活动编码，唯一标识
    */
@@ -22,6 +32,7 @@ class Action {
 
   subActions?: Action[];
 
+  nextAction?: Action;
   /**
    * 等待超时设置
    */
@@ -34,14 +45,20 @@ class Action {
     this.subActions = subActions;
   }
 
-  async doAction(baseObj: Frame) {
+  getFirstAction() {
+    return this;
+  }
+
+  async doAction(context: ActionContext) {
+    const { baseObj } = context;
     console.log(`wait action :${this.code}`)
     await baseObj.waitForSelector(this.selector, this.waitTimeOutOption);
     console.log(`wait action success:${this.code}`)
-    await this.doClick(baseObj);
+    await this.doClick(context);
   }
 
-  async doClick(baseObj: Frame) {
+  async doClick(context: ActionContext) {
+    const { baseObj } = context;
     let success = false;
     let done = false;
     while (!success) {
@@ -66,9 +83,10 @@ class Action {
       }
     }
     if (this.subActions) this.subActions.forEach(async action => {
-      await action.doAction(baseObj);
+      await action.doAction(context);
     })
   }
 }
 
-export { Action }
+export { Action, CanDo }
+export type { ActionContext }

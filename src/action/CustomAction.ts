@@ -1,19 +1,19 @@
 import { Frame } from "puppeteer";
-import { Action } from "./Action";
+import { Action, ActionContext } from "./Action";
 
 /**
  * 自定义动作
  */
 class CustomAction extends Action {
-  act: (frame: Frame) => Promise<void>;
+  act: (context: ActionContext) => Promise<void>;
 
-  constructor (code: string, selector: string, act: (frame: Frame) => Promise<void>) {
+  constructor (code: string, selector: string, act: (context: ActionContext) => Promise<void>) {
     super(code, selector);
     this.act = act;
   }
 
-  async doAction(baseObj: Frame) {
-    await this.act(baseObj);
+  async doAction(context: ActionContext) {
+    await this.act(context);
   }
 }
 

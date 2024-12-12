@@ -4,6 +4,7 @@ import { init, myUtil } from './utils';
 import { adv } from './common';
 import { doTower } from './tower';
 import { doColosseum } from './colosseum';
+import { ActionQueue } from './action/ActionQueue';
 
 // const __filename = fileURLToPath(import.meta.url);
 // const __dirname = path.dirname('d:\\personal\\ts');
@@ -41,11 +42,13 @@ import { doColosseum } from './colosseum';
 
 	try {
 		if (innerFrame) {
-      await adv.doAction(innerFrame);
-			
-      await doTower(innerFrame, 10);
+      const tower = doTower(100);
+      const colosseum = doColosseum(100);
+      const myList = [adv, tower];
+      
+      const myQueue = new ActionQueue(myList);
 
-      // await doColosseum(innerFrame, 100);
+      myQueue.doAction({ baseObj: innerFrame });
 		}
 	} catch (e) {
 		console.log(innerFrame?.url());
