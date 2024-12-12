@@ -14,7 +14,7 @@ class TestAction extends Action {
     // 测试需要点击的对象是否存在，不存在则直接跳过
     const clickObj = await baseObj.$(this.clickSelector);
     if (clickObj) {
-      this.doClick(context);
+      await this.doClick(context);
     } 
   }
 }

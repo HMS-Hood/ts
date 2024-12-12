@@ -14,6 +14,7 @@ class LoopActionQueue extends ActionQueue {
     const { baseObj } = context;
     for (let i = 1; i <= this.loopTimes; i++) {
       for (let j = 0; j < this.canDos.length; j++) {
+        console.log(`do loop queue: loop=${i}, no=${j}`)
         if (i === this.loopTimes && j === this.canDos.length - 1) {
           // 最后一次循环的最后一个元素
           await this.canDos[j].doAction(context)

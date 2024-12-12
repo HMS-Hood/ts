@@ -32,7 +32,6 @@ class Action implements CanDo {
 
   subActions?: Action[];
 
-  nextAction?: Action;
   /**
    * 等待超时设置
    */
@@ -82,9 +81,11 @@ class Action implements CanDo {
         if (done) success = true;
       }
     }
-    if (this.subActions) this.subActions.forEach(async action => {
-      await action.doAction(context);
-    })
+    if (this.subActions) {
+      for (let i = 0; i < this.subActions.length; i++) {
+        await this.subActions[i].doAction(context);
+      } 
+    }
   }
 }
 

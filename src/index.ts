@@ -1,6 +1,6 @@
 import puppeteer from 'puppeteer';
 import path from 'path';
-import { init, myUtil } from './utils';
+import { delay, init, myUtil } from './utils';
 import { adv } from './common';
 import { doTower } from './tower';
 import { doColosseum } from './colosseum';
@@ -27,6 +27,8 @@ import { ActionQueue } from './action/ActionQueue';
 	// Navigate the page to a URL.
 	await page.goto('https://www.nutaku.net/zh/games/dirty-league/play/', { timeout: 0 });
 
+	await delay(20000);
+
 	// 等待 iframe 加载
 	const iframeHandle = await page.waitForSelector('iframe');
 
@@ -42,7 +44,7 @@ import { ActionQueue } from './action/ActionQueue';
 
 	try {
 		if (innerFrame) {
-      const tower = doTower(100);
+      const tower = doTower(400);
       const colosseum = doColosseum(100);
       const myList = [adv, tower];
       

@@ -24,6 +24,11 @@ class SkipableAction extends Action {
         if (nextObj && nextObjEnable) success = true;
       }
     }
+    if (this.subActions) {
+      for (let i = 0; i < this.subActions.length; i++) {
+        await this.subActions[i].doAction(context);
+      } 
+    }
     console.log(`wait action success:${this.code}`)
   }
 }

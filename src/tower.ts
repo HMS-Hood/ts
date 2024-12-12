@@ -2,7 +2,7 @@ import { Frame } from "puppeteer";
 import { Action } from "./action/Action";
 import { LongWaitAction } from "./action/LongWaitAction";
 import { TestAction } from "./action/TestAction";
-import { getChest } from "./common";
+import { adv, getChest } from "./common";
 import { SkipableAction } from "./action/SkipableAction";
 import { LoopActionQueue } from "./action/LoopActionQueue";
 import { ActionQueue } from "./action/ActionQueue";
@@ -36,7 +36,12 @@ const confirmTowerVictory = new LongWaitAction('confirm-tower-victory', 'ul.rewa
 /**
  * abondant chest
  */
-const removeChest = new SkipableAction('remove-chest', 'div.popup.tower-chest-open.remove', 'div.popup.tower-chest-open.remove div.btn.glow-red');
+const removeChest = new SkipableAction(
+  'remove-chest',
+  'div.popup.tower-chest-open.remove',
+  'div.popup.tower-chest-open.remove div.btn.glow-red',
+  [adv]
+);
 
 const doTower = (times: number = 1) => {
   const loopQueue = new LoopActionQueue([

@@ -42,9 +42,11 @@ class OpenChestAction extends Action {
         if (!tagObj || !tagObjEnable) success = true;
       }
     }
-    if (this.subActions) this.subActions.forEach(async action => {
-      await action.doAction(context);
-    })
+    if (this.subActions) {
+      for (let i = 0; i < this.subActions.length; i++) {
+        await this.subActions[i].doAction(context);
+      } 
+    }
   }
 }
 
