@@ -41,7 +41,7 @@ import { doColosseum } from './colosseum';
 
 	try {
 		if (innerFrame) {
-      adv.doAction(innerFrame);
+      await adv.doAction(innerFrame);
 			
       await doTower(innerFrame, 10);
 
