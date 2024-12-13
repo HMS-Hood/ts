@@ -23,11 +23,9 @@ import { ActionQueue } from './action/ActionQueue';
 	});
 
 	const page = await browser.newPage();
-
+delay(10000)
 	// Navigate the page to a URL.
 	await page.goto('https://www.nutaku.net/zh/games/dirty-league/play/', { timeout: 0 });
-
-	await delay(20000);
 
 	// 等待 iframe 加载
 	const iframeHandle = await page.waitForSelector('iframe');
@@ -46,7 +44,7 @@ import { ActionQueue } from './action/ActionQueue';
 		if (innerFrame) {
       const tower = doTower(400);
       const colosseum = doColosseum(100);
-      const myList = [adv, tower];
+      const myList = [adv, colosseum];
       
       const myQueue = new ActionQueue(myList);
 

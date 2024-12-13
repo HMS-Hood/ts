@@ -7,6 +7,7 @@ import { LongWaitAction } from "./action/LongWaitAction";
 import { getChest } from "./common";
 import { LoopActionQueue } from "./action/LoopActionQueue";
 import { ActionQueue } from "./action/ActionQueue";
+import { SkipableAction } from "./action/SkipableAction";
 
 /**
  * enter colosseum
@@ -125,12 +126,12 @@ const confirmVictory = new LongWaitAction('confirm-victory', 'div.reward-box', '
 /**
  * get colosseum reward
  */
-const getColosseumReward = new Action('get-colosseum-reward', 'div.popup-layer.dialog-fullscreen', 'div.popup-layer.dialog-fullscreen div.btn.green');
+const getColosseumReward = new SkipableAction('get-colosseum-reward', 'div.popup-layer.dialog-fullscreen', 'div.popup-layer.dialog-fullscreen div.btn.green');
 
 /**
  * check new colosseum
  */
-const colosseumClean = new Action('colosseum-clean', 'div.colosseum-map__arenas', 'div.colosseum-map__arenas div.colosseum-map__item:not(.locked)');
+const colosseumClean = new SkipableAction('colosseum-clean', 'div.colosseum-map__item:not(.locked)', 'div.colosseum-map__item:not(.locked) div.colosseum-map__arena');
 
 /**
  * enter colosseum from main, and do colosseum with times
@@ -141,7 +142,7 @@ const doColosseum = (times: number = 1) => {
   const loopQueue = new LoopActionQueue([
     collection, toys, removeAllToys, quiteToys,
     selectTarget, deploy, setDeck,
-    attack, confirmVictory, getChest,
+    attack, confirmVictory, getColosseumReward, getChest, colosseumClean,
   ], times);
   return new ActionQueue([ enterColosseum, loopQueue ]);
 }
