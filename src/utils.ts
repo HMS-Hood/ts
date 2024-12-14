@@ -12,6 +12,16 @@ const isEnable = async (element: ElementHandle<Element> | null): Promise<boolean
   return false;
 }
 
+const getPoint = async (element: ElementHandle<Element>): Promise<Point | undefined> => {
+  const boundingBox = await element.boundingBox();
+  if (boundingBox) {
+    // 计算点击坐标，假设你要点击 canvas 的中间
+    const x = boundingBox.x + boundingBox.width / 2;
+    const y = boundingBox.y + boundingBox.height / 2;
+    return { x, y }
+  }
+}
+
 class Util {
   baseObj: Frame;
   page: Page;
@@ -42,14 +52,10 @@ class Util {
   }
 }
 
-
-
-
-
 let myUtil: Util;
 
 const init = (page: Page, frame: Frame) => {
   myUtil = new Util(page, frame);
 }
 
-export { myUtil, init, delay, isEnable }
+export { myUtil, init, delay, isEnable, getPoint }

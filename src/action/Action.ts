@@ -1,9 +1,12 @@
 import { Frame, WaitForSelectorOptions } from "puppeteer";
 import { delay, isEnable } from "../utils";
+import { SimpleDo } from "./SimpleDo";
+import { SetEventFlat } from "./SetEventFlag";
 
 type ActionContext = {
   baseObj: Frame,
   nextAction?: Action,
+  eventFlag: Record<string, boolean>,
 }
 
 interface CanDo {
@@ -30,14 +33,14 @@ class Action implements CanDo {
    */
   clickSelector: string;
 
-  subActions?: Action[];
+  subActions?: (Action | SimpleDo | SetEventFlat)[];
 
   /**
    * 等待超时设置
    */
   waitTimeOutOption: WaitForSelectorOptions = { timeout: 30000 };
 
-  constructor(code: string, selector: string, clickSelector?: string, subActions?: Action[]) {
+  constructor(code: string, selector: string, clickSelector?: string, subActions?: (Action | SimpleDo | SetEventFlat)[]) {
     this.code = code;
     this.selector = selector;
     this.clickSelector = clickSelector??selector;

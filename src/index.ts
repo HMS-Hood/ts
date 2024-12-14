@@ -5,6 +5,7 @@ import { adv } from './common';
 import { doTower } from './tower';
 import { doColosseum } from './colosseum';
 import { ActionQueue } from './action/ActionQueue';
+import { LoopActionQueue } from './action/LoopActionQueue';
 
 // const __filename = fileURLToPath(import.meta.url);
 // const __dirname = path.dirname('d:\\personal\\ts');
@@ -27,8 +28,6 @@ import { ActionQueue } from './action/ActionQueue';
 	// Navigate the page to a URL.
 	await page.goto('https://www.nutaku.net/zh/games/dirty-league/play/', { timeout: 0 });
 
-	await delay(20000);
-
 	// 等待 iframe 加载
 	const iframeHandle = await page.waitForSelector('iframe');
 
@@ -44,13 +43,14 @@ import { ActionQueue } from './action/ActionQueue';
 
 	try {
 		if (innerFrame) {
-      const tower = doTower(400);
-      const colosseum = doColosseum(100);
-      const myList = [adv, tower];
+      const tower = doTower(7);
+      const colosseum = doColosseum(10);
+			const roundAction = new LoopActionQueue([tower, colosseum], 100);
+      const myList = [adv, roundAction];
       
       const myQueue = new ActionQueue(myList);
 
-      myQueue.doAction({ baseObj: innerFrame });
+      myQueue.doAction({ baseObj: innerFrame, eventFlag: {} });
 		}
 	} catch (e) {
 		console.log(innerFrame?.url());

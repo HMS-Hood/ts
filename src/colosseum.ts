@@ -1,12 +1,14 @@
 import { ElementHandle, Frame, Point } from "puppeteer";
-import { myUtil, delay } from "./utils";
+import { myUtil, delay, getPoint } from "./utils";
 import { Action, ActionContext } from "./action/Action";
 import { ChoiseAction } from "./action/OptionalAction";
 import { CustomAction } from "./action/CustomAction";
 import { LongWaitAction } from "./action/LongWaitAction";
-import { getChest } from "./common";
+import { getChest, quiteScreen } from "./common";
 import { LoopActionQueue } from "./action/LoopActionQueue";
 import { ActionQueue } from "./action/ActionQueue";
+import { SkipableAction } from "./action/SkipableAction";
+import { SetEventFlat } from "./action/SetEventFlag";
 
 /**
  * enter colosseum
@@ -69,45 +71,43 @@ const selectTarget = new CustomAction("select-target", "div.colosseum-info", asy
  */
 const deploy = new Action('deploy', 'div.btn.glow-green.hidden', 'div.btn.glow-green.hidden div.btn-text');
 
-const getPoint = async (element: ElementHandle<Element>): Promise<Point | undefined> => {
-  const boundingBox = await element.boundingBox();
-  if (boundingBox) {
-    // 计算点击坐标，假设你要点击 canvas 的中间
-    const x = boundingBox.x + boundingBox.width / 2;
-    const y = boundingBox.y + boundingBox.height / 2;
-    return { x, y }
-  }
-}
-
+const NOT_ENOUPH_CARDS_IN_COLOSSEUM = 'NOT_ENOUPH_CARDS_IN_COLOSSEUM';
 /**
  * deploy members and toys
  */
 const setDeck = new CustomAction('set-deck', 'div.colosseum-deck', async (context: ActionContext) => {
   const { baseObj: frame } = context;
-  const cardsList = await frame.$('div.cards-list div.cards-list__slot div.item-container');
-  if (cardsList) {
+  const enabledCards = await frame.$$('div.cards-list div.cards-list__slot:not(.locked) div.item-container');
+  if (enabledCards.length <= 7) {
+    await new SetEventFlat(NOT_ENOUPH_CARDS_IN_COLOSSEUM).doAction(context);
+  }
+  for (let i = 0; i <= 3; i++) {
+    let cardsList:ElementHandle<HTMLDivElement> | null = null;
+    
+    while (cardsList === null) {
+      cardsList = await frame.$('div.cards-list div.cards-list__slot:not(.locked) div.item-container');
+      if (cardsList === null) await delay(10000);
+    }
+    
     const startPoint = await getPoint(cardsList);
-
-    for (let i = 0; i <= 3; i++) {
-      const deckSet = await frame.$$('div.player-set div.deck-slot');
-      const endPoint = await getPoint(deckSet[i]);
-      console.log(`loop:${i}, start=${startPoint}, end=${endPoint}`)
-      if (startPoint && endPoint) {
-        console.log(`begin drag & drop`)
-        await myUtil.mouseMove(startPoint);
-        await delay(100);
-        await myUtil.mouseDown();
-        await delay(300);
-        await myUtil.mouseMove(endPoint);
-        await delay(1000);
-        await myUtil.mouseUp();
-        await delay(3000)
-        await myUtil.mouseClick(endPoint.x, endPoint.y);
-        await new ChoiseAction('set-girl', 'div.card-menu__items', 'div.card-menu__items div.card-menu__item:nth-of-type(3)', 'div.card-menu__items div.card-menu__item:nth-of-type(3).active').doAction(context);
-        await new ChoiseAction('set-toys', 'div.toys__buttons', 'div.toys__buttons div.btn:nth-of-type(1)', 'div.toys__buttons div.btn.blue:nth-of-type(2)').doAction(context);
-        await new Action('quit-toys', 'div.popup.card-details', 'div.popup.card-details div.btn_round.icn_x-icon.close').doAction(context);
-        console.log(`delay end`)
-      }
+    const deckSet = await frame.$$('div.player-set div.deck-slot');
+    const endPoint = await getPoint(deckSet[i]);
+    console.log(`loop:${i}, start=${startPoint}, end=${endPoint}`)
+    if (startPoint && endPoint) {
+      console.log(`begin drag & drop`)
+      await myUtil.mouseMove(startPoint);
+      await delay(100);
+      await myUtil.mouseDown();
+      await delay(300);
+      await myUtil.mouseMove(endPoint);
+      await delay(1000);
+      await myUtil.mouseUp();
+      await delay(3000)
+      await myUtil.mouseClick(endPoint.x, endPoint.y);
+      await new ChoiseAction('set-girl', 'div.card-menu__items', 'div.card-menu__items div.card-menu__item:nth-of-type(3)', 'div.card-menu__items div.card-menu__item:nth-of-type(3).active').doAction(context);
+      await new ChoiseAction('set-toys', 'div.toys__buttons', 'div.toys__buttons div.btn:nth-of-type(1)', 'div.toys__buttons div.btn.blue:nth-of-type(2)').doAction(context);
+      await new Action('quit-toys', 'div.popup.card-details', 'div.popup.card-details div.btn_round.icn_x-icon.close').doAction(context);
+      console.log(`delay end`)
     }
   }
 })
@@ -123,14 +123,16 @@ const attack = new Action('attack', 'div.player-set', 'div.player-set div.btn.bl
 const confirmVictory = new LongWaitAction('confirm-victory', 'div.reward-box', 'div.reward-box div.btn.blue');
 
 /**
- * get colosseum reward
- */
-const getColosseumReward = new Action('get-colosseum-reward', 'div.popup-layer.dialog-fullscreen', 'div.popup-layer.dialog-fullscreen div.btn.green');
-
-/**
  * check new colosseum
  */
-const colosseumClean = new Action('colosseum-clean', 'div.colosseum-map__arenas', 'div.colosseum-map__arenas div.colosseum-map__item:not(.locked)');
+const checkNewColosseum = new SkipableAction('check-new-colosseum',
+  'div.colosseum-map__arenas div.colosseum-map__item:not(.locked) div.colosseum-map__arena',
+  'div.colosseum-map__arenas div.colosseum-map__item:not(.locked) div.colosseum-map__arena');
+
+/**
+ * get colosseum reward
+ */
+const getColosseumReward = new SkipableAction('get-colosseum-reward', 'div.popup-layer.dialog-fullscreen', 'div.popup-layer.dialog-fullscreen div.btn.green');
 
 /**
  * enter colosseum from main, and do colosseum with times
@@ -141,9 +143,9 @@ const doColosseum = (times: number = 1) => {
   const loopQueue = new LoopActionQueue([
     collection, toys, removeAllToys, quiteToys,
     selectTarget, deploy, setDeck,
-    attack, confirmVictory, getChest,
-  ], times);
-  return new ActionQueue([ enterColosseum, loopQueue ]);
+    attack, confirmVictory, getColosseumReward, getChest, checkNewColosseum, 
+  ], times, NOT_ENOUPH_CARDS_IN_COLOSSEUM);
+  return new ActionQueue([ enterColosseum, loopQueue, quiteScreen ]);
 }
 
-export { doColosseum }
+export { collection, doColosseum, toys, removeAllToys, quiteToys }

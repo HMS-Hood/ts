@@ -1,3 +1,4 @@
+import { Action } from "./action/Action";
 import { OpenChestAction } from "./action/OpenChestAction";
 import { SkipableAction } from "./action/SkipableAction";
 
@@ -11,4 +12,9 @@ const adv = new SkipableAction('adv', 'div.popup-layer.fullscreen', 'div.popup-l
  */
 const getChest = new OpenChestAction();
 
-export { adv, getChest }
+/**
+ * 退出当前场景
+ */
+const quiteScreen = new Action('quite-tower', 'div.screen__header', 'div.screen__header div.btn_round.icn_back')
+
+export { adv, getChest, quiteScreen }

@@ -3,7 +3,7 @@ import { Action, ActionContext, CanDo } from "./Action";
 
 class ActionQueue implements CanDo {
   canDos: CanDo[];
-
+  
   constructor(actions: CanDo[]) {
     this.canDos = actions;
   }
@@ -15,12 +15,13 @@ class ActionQueue implements CanDo {
   }
 
   async doAction(context: ActionContext) {
-    const { baseObj } = context;
+    const { baseObj, eventFlag } = context;
     for (let i = 0; i < this.canDos.length; i++) {
       if (i === this.canDos.length - 1) {
         await this.canDos[i].doAction(context);
       } else {
-        await this.canDos[i].doAction({ baseObj, nextAction: this.canDos[i + 1].getFirstAction() });
+        // context.nextAction = this.canDos[i+1].getFirstAction();
+        await this.canDos[i].doAction({ ...context, nextAction: this.canDos[i+1].getFirstAction() });
       }
     }
   }
