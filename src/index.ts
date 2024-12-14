@@ -24,7 +24,7 @@ import { LoopActionQueue } from './action/LoopActionQueue';
 	});
 
 	const page = await browser.newPage();
-
+delay(10000)
 	// Navigate the page to a URL.
 	await page.goto('https://www.nutaku.net/zh/games/dirty-league/play/', { timeout: 0 });
 
