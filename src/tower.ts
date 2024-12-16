@@ -2,7 +2,7 @@ import { Frame } from "puppeteer";
 import { Action, ActionContext } from "./action/Action";
 import { LongWaitAction } from "./action/LongWaitAction";
 import { TestAction } from "./action/TestAction";
-import { adv, getChest, quiteScreen } from "./common";
+import { adv, confirmVictory, getChest, quiteScreen } from "./common";
 import { SkipableAction } from "./action/SkipableAction";
 import { LoopActionQueue } from "./action/LoopActionQueue";
 import { ActionQueue } from "./action/ActionQueue";
@@ -28,6 +28,15 @@ const deck = new ChoiseAction("deck", "div.tabs__item.icn_decks", "div.tabs__ite
  */
 const setDeckToys = new CustomAction('set-deck-toys', 'div.player-set', async (context: ActionContext) => {
   const { baseObj: frame } = context;
+  await deck.doAction(context);
+  const apObj = await frame.$('div.player-set div.hp.icn_fist.icn_28');
+  const ap = await apObj?.evaluate(elment => elment.innerHTML);
+  if (ap && parseInt(ap) > 5000) {
+    return;
+  }
+  await toys.doAction(context);
+  await removeAllToys.doAction(context); 
+  await deck.doAction(context);
   const deckSet = await frame.$$('div.player-set div.deck-slot');
   for (let i = 0; i <= 4; i++) {
     const endPoint = await getPoint(deckSet[i]);
@@ -57,9 +66,9 @@ const collectChest = new TestAction(
 const fightTower = new Action('fight-tower', 'div.tb-controls.league', 'div.tb-controls.league div.btn.glow-green.hidden div.btn-text');
 
 /**
- * confirm victory in tower
+ * confirm lose in tower
  */
-const confirmTowerVictory = new LongWaitAction('confirm-tower-victory', 'ul.reward-box', 'ul.reward-box div.btn.blue');
+const confirmTowerLose = new SkipableAction('confirm-tower-lose', 'div.popup.tower-victory.lose', 'div.popup.tower-victory.lose div.btn.gray');
 
 const NO_CHEST_SLOT_IN_TOWER = 'NO_CHEST_SLOT_IN_TOWER'
 /**
@@ -81,9 +90,9 @@ const removeChest = new SkipableAction(
 
 const doTower = (times: number = 1) => {
   const loopQueue = new LoopActionQueue([
-    collectChest, fightTower, confirmTowerVictory, removeChest
+    collectChest, fightTower, confirmVictory, removeChest
   ], times, NO_CHEST_SLOT_IN_TOWER);
-  return new ActionQueue([enterTower, collection, toys, removeAllToys, deck, setDeckToys, quiteToys, loopQueue, quiteScreen]);
+  return new ActionQueue([enterTower, collection, setDeckToys, quiteToys, loopQueue, quiteScreen]);
 }
 
-export { doTower }
+export { doTower, confirmTowerLose }

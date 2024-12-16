@@ -1,4 +1,5 @@
 import { Action } from "./action/Action";
+import { LongWaitAction } from "./action/LongWaitAction";
 import { OpenChestAction } from "./action/OpenChestAction";
 import { SkipableAction } from "./action/SkipableAction";
 
@@ -15,6 +16,12 @@ const getChest = new OpenChestAction();
 /**
  * 退出当前场景
  */
-const quiteScreen = new Action('quite-tower', 'div.screen__header', 'div.screen__header div.btn_round.icn_back')
+const quiteScreen = new Action('quite-screen', 'div.screen__header', 'div.screen__header div.btn_round.icn_back')
 
-export { adv, getChest, quiteScreen }
+/**
+ * confirm victory in tower
+ */
+const confirmVictory = new LongWaitAction('confirm--victory', 'ul.reward-box', 'ul.reward-box div.btn.blue');
+
+
+export { adv, getChest, quiteScreen, confirmVictory }

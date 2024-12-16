@@ -100,9 +100,9 @@ const setDeck = new CustomAction('set-deck', 'div.colosseum-deck', async (contex
       await myUtil.mouseDown();
       await delay(300);
       await myUtil.mouseMove(endPoint);
-      await delay(1000);
+      await delay(300);
       await myUtil.mouseUp();
-      await delay(3000)
+      await delay(1000)
       await myUtil.mouseClick(endPoint.x, endPoint.y);
       await new ChoiseAction('set-girl', 'div.card-menu__items', 'div.card-menu__items div.card-menu__item:nth-of-type(3)', 'div.card-menu__items div.card-menu__item:nth-of-type(3).active').doAction(context);
       await new ChoiseAction('set-toys', 'div.toys__buttons', 'div.toys__buttons div.btn:nth-of-type(1)', 'div.toys__buttons div.btn.blue:nth-of-type(2)').doAction(context);
