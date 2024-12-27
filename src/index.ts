@@ -2,17 +2,20 @@ import puppeteer from 'puppeteer';
 import path from 'path';
 import { delay, init, myUtil } from './utils';
 import { adv, getChest } from './common';
-import { confirmTowerLose, doTower } from './tower';
-import { doColosseum } from './colosseum';
+import { confirmTowerLose, doTower, lostTower } from './tower';
+import { doColosseum, fightLost } from './colosseum';
 import { ActionQueue } from './action/ActionQueue';
 import { LoopActionQueue } from './action/LoopActionQueue';
-import { SkipableAction } from './action/SkipableAction';
 import { SkipableList } from './action/SkipableList';
-import { doEvent, initBossDate } from './event';
+import { doEvent } from './event';
 
 // const __filename = fileURLToPath(import.meta.url);
 // const __dirname = path.dirname('d:\\personal\\ts');
-
+// 'button outlined white ripple js-btn-modal js-login'
+// 'flx content-login js-content-login'
+// name 'email' 'password' 'button filled primary fnt-large-2 txt-up ripple js-btn-submit'
+// 'button filled primary fnt-large-2 txt-up ripple js-btn-submit'
+// 'button filled primary btn-play txt-up ripple js-main-button js-action-after-login'
 (async () => {
 	while(true) {
 		// Or import puppeteer from 'puppeteer-core';
@@ -45,31 +48,25 @@ import { doEvent, initBossDate } from './event';
 		// 初始化工具类
 		if (innerFrame) init(page, innerFrame);
 
-		const initBossPara  = {
-			common: [0],
-			rare: [0],
-			epic: [0],
-			legendary: [0],
-		}
-
 		try {
 			if (innerFrame) {
-				const preDo = new SkipableList([adv, confirmTowerLose, getChest]);
+				const preDo = new SkipableList([adv, confirmTowerLose, getChest, fightLost]);
 				const tower = doTower(7);
+				const lose = lostTower(7);
 				const colosseum = doColosseum(10);
-				initBossDate(initBossPara);
 				const event = doEvent();
-				const roundQueue = new LoopActionQueue([event, colosseum, tower], 300);
-				const mainList = [preDo, roundQueue];
+				const roundQueue = new LoopActionQueue([event, tower], 1000);
 				
-				const myQueue = new ActionQueue(mainList);
+				const myQueue = new ActionQueue([preDo, roundQueue]);
 
 				await myQueue.doAction({ baseObj: innerFrame, eventFlag: {} });
 			}
 		} catch (e) {
-			await browser.close();
 			console.log(innerFrame?.url());
 			console.log(e);
+		} finally {
+			console.log('the end');
+			await browser.close();
 		}
 	}
 })();

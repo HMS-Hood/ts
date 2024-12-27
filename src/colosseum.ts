@@ -1,14 +1,15 @@
-import { ElementHandle, Frame, Point } from "puppeteer";
+import { ElementHandle } from "puppeteer";
 import { myUtil, delay, getPoint } from "./utils";
 import { Action, ActionContext } from "./action/Action";
 import { ChoiseAction } from "./action/OptionalAction";
 import { CustomAction } from "./action/CustomAction";
 import { LongWaitAction } from "./action/LongWaitAction";
-import { getChest, quiteScreen } from "./common";
+import { getChest, quiteScreen, skipableAdv } from "./common";
 import { LoopActionQueue } from "./action/LoopActionQueue";
 import { ActionQueue } from "./action/ActionQueue";
-import { SkipableAction } from "./action/SkipableAction";
 import { SetEventFlat } from "./action/SetEventFlag";
+import { SkipableList } from "./action/SkipableList";
+import { ChoiseList } from "./action/ChoiseList";
 
 /**
  * enter colosseum
@@ -120,20 +121,24 @@ const attack = new Action('attack', 'div.player-set', 'div.player-set div.btn.bl
 /**
  * confirm victory
  */
-const confirmVictory = new LongWaitAction('confirm-victory', 'div.reward-box', 'div.reward-box div.btn.blue');
+const confirmVictory = new LongWaitAction('confirm-victory', 'div.popup.event-victory.colosseum', 'div.popup.event-victory.colosseum div.btn.blue');
 
+const fightLost = new Action('fight-lost', 'div.popup.fight-victory.lose.center', 'div.popup.fight-victory.lose.center div.btn.gray', [skipableAdv]);
+
+const fightResult = new ChoiseList([confirmVictory, fightLost]);
 /**
  * check new colosseum
  */
-const checkNewColosseum = new SkipableAction('check-new-colosseum',
+const checkNewColosseum = new Action('check-new-colosseum',
   'div.colosseum-map__arenas div.colosseum-map__item:not(.locked) div.colosseum-map__arena',
   'div.colosseum-map__arenas div.colosseum-map__item:not(.locked) div.colosseum-map__arena');
 
 /**
  * get colosseum reward
  */
-const getColosseumReward = new SkipableAction('get-colosseum-reward', 'div.popup-layer.dialog-fullscreen', 'div.popup-layer.dialog-fullscreen div.btn.green');
+const getColosseumReward = new Action('get-colosseum-reward', 'div.popup-layer.dialog-fullscreen', 'div.popup-layer.dialog-fullscreen div.btn.green');
 
+const getReward = new SkipableList([getColosseumReward, getChest, checkNewColosseum]);
 /**
  * enter colosseum from main, and do colosseum with times
  * @param frame 
@@ -143,9 +148,9 @@ const doColosseum = (times: number = 1) => {
   const loopQueue = new LoopActionQueue([
     collection, toys, removeAllToys, quiteToys,
     selectTarget, deploy, setDeck,
-    attack, confirmVictory, getColosseumReward, getChest, checkNewColosseum, 
+    attack, fightResult, getReward, 
   ], times, NOT_ENOUPH_CARDS_IN_COLOSSEUM);
   return new ActionQueue([ enterColosseum, loopQueue, quiteScreen ]);
 }
 
-export { collection, doColosseum, toys, removeAllToys, quiteToys }
+export { collection, doColosseum, toys, removeAllToys, quiteToys, fightLost }

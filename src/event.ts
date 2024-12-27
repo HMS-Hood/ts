@@ -2,9 +2,9 @@ import { ElementHandle, Frame } from "puppeteer";
 import { Action, ActionContext } from "./action/Action";
 import { ActionQueue } from "./action/ActionQueue";
 import { CustomAction } from "./action/CustomAction";
-import { adv, confirmVictory, quiteScreen } from "./common";
+import { adv, skipableAdv, quiteScreen } from "./common";
 import { delay, myUtil } from "./utils";
-import { SimpleDo } from "./action/SimpleDo";
+import { LongWaitAction } from "./action/LongWaitAction";
 
 /**
  * enter event
@@ -45,38 +45,24 @@ const clickEventBoss = async (baseObj: Frame, handle: ElementHandle<Element>, xP
 type BossLevel = 'common' | 'rare' | 'epic' | 'legendary' | 'mythic';
 
 const bossInfo: Record<BossLevel, { xPer: number, yPer: number, length: number }> = {
-  common: { xPer: 3/8, yPer: 1/3, length: 24 * 60 * 1000 },
-  rare: { xPer: 2/3, yPer: 1/3, length: 48 * 60 * 1000 },
-  epic: { xPer: 5/6, yPer: 2/3, length: 96 * 60 * 1000 },
-  legendary: { xPer: 3/5, yPer: 2/3, length: 200 * 60 * 1000 },
-  mythic: { xPer: 3/8, yPer: 2/3, length: 480 * 60 * 1000 },
+  common: { xPer: 5/12, yPer: 2/3, length: 24 * 60 * 1000 },
+  rare: { xPer: 1/4, yPer: 1/3, length: 48 * 60 * 1000 },
+  epic: { xPer: 14/20, yPer: 1/3, length: 96 * 60 * 1000 },
+  legendary: { xPer: 14/20, yPer: 2/3, length: 200 * 60 * 1000 },
+  mythic: { xPer: 1/4, yPer: 2/3, length: 480 * 60 * 1000 },
 }
 
 let currentBoss: BossLevel;
 
-const bossDate: Record<BossLevel, Date | undefined> = {
-  common: undefined,
-  rare: undefined,
-  epic: undefined,
-  legendary: undefined,
-  mythic: undefined,
+const bossDate: Record<BossLevel, Date | null> = {
+  common: new Date(),
+  rare: new Date(),
+  epic: new Date(),
+  legendary: new Date(),
+  mythic: new Date(),
 }
 
-const initBossDate = (initParam: { [ k in BossLevel]?: number[] }) => {
-  Object.entries(initParam).forEach(([key, value]) => {
-    const [ time1, time2, time3 ] = value;
-    let time = time1;
-    if (time2 !== undefined) {
-      time = time * 60 + time2;
-    }
-    if (time3 !== undefined) {
-      time = time * 60 + time3;
-    }
-    time = time * 1000;
-    (bossDate as any)[key] = new Date(new Date().getTime() + time);
-    console.log(`set bose date:${(bossDate as any)[key]}`)
-  })
-}
+const confirmVictory = new LongWaitAction('confirm--victory', 'ul.reward-box', 'ul.reward-box div.btn.blue');
 
 const getExpireBoss = () => {
   const current = new Date();
@@ -154,7 +140,7 @@ const beginEventFight = new CustomAction('begin-event-fight', 'div.game-screen.c
 
     expireBoss = getExpireBoss();
 
-    await adv.doAction({ ...context, nextAction: quiteScreen });
+    await skipableAdv.doAction({ ...context, nextAction: quiteScreen });
   }
 
 });
@@ -162,7 +148,7 @@ const beginEventFight = new CustomAction('begin-event-fight', 'div.game-screen.c
 const confirmEventFight = new Action('confirm-event-fight', 'div.popup.fight-intro', 'div.btn.blue.attack');
 
 const doEvent = (times: number = 1) => {
-  return new ActionQueue([ enterEvent, beginEventFight, adv, quiteScreen ]);
+  return new ActionQueue([ enterEvent, beginEventFight, quiteScreen ]);
 }
 
-export { doEvent, initBossDate }
+export { doEvent }

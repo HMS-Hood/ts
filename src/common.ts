@@ -1,12 +1,13 @@
 import { Action } from "./action/Action";
-import { LongWaitAction } from "./action/LongWaitAction";
 import { OpenChestAction } from "./action/OpenChestAction";
 import { SkipableAction } from "./action/SkipableAction";
 
 /**
  * 广告
  */
-const adv = new SkipableAction('adv', 'div.popup-layer.fullscreen', 'div.popup-layer.fullscreen div.btn_round.icn_x-icon.close');
+const adv = new Action('adv', 'div.popup-layer.fullscreen div.btn_round.icn_x-icon.close', 'div.popup-layer.fullscreen div.btn_round.icn_x-icon.close');
+
+const skipableAdv = new SkipableAction('adv', 'div.popup-layer.fullscreen div.btn_round.icn_x-icon.close', 'div.popup-layer.fullscreen div.btn_round.icn_x-icon.close');
 
 /**
  * 打开宝箱
@@ -18,10 +19,5 @@ const getChest = new OpenChestAction();
  */
 const quiteScreen = new Action('quite-screen', 'div.screen__header', 'div.screen__header div.btn_round.icn_back')
 
-/**
- * confirm victory in tower
- */
-const confirmVictory = new LongWaitAction('confirm--victory', 'ul.reward-box', 'ul.reward-box div.btn.blue');
 
-
-export { adv, getChest, quiteScreen, confirmVictory }
+export { adv, skipableAdv, getChest, quiteScreen }

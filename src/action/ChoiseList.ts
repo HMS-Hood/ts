@@ -1,7 +1,7 @@
 import { delay, isEnable } from "../utils";
 import { Action, ActionContext, CanDo } from "./Action";
 
-class SkipableList implements CanDo {
+class ChoiseList implements CanDo {
   actions: Action[];
 
   constructor(actions: Action[]) {
@@ -12,7 +12,8 @@ class SkipableList implements CanDo {
     const { baseObj, nextAction } = context;
     console.log(`wait skipable list`)
     let skiped = false;
-    while (!skiped) {
+    let success = false
+    while (!skiped && !success) {
       await delay();
       let enabledAction = null;
       for (const action of this.actions) {
@@ -27,6 +28,7 @@ class SkipableList implements CanDo {
       if (enabledAction) {
         console.log(`do skipable action =${enabledAction.code}`)
         await enabledAction.doAction(context);
+        success = true;
       } else if (nextAction) {
         const nextObj = await baseObj.$(nextAction.selector);
         const nextObjEnable = await isEnable(nextObj);
@@ -42,4 +44,4 @@ class SkipableList implements CanDo {
   }
 }
 
-export { SkipableList }
+export { ChoiseList }

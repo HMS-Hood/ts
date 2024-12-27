@@ -2,7 +2,7 @@ import { Frame } from "puppeteer";
 import { Action, ActionContext } from "./action/Action";
 import { LongWaitAction } from "./action/LongWaitAction";
 import { TestAction } from "./action/TestAction";
-import { adv, confirmVictory, getChest, quiteScreen } from "./common";
+import { skipableAdv, getChest, quiteScreen } from "./common";
 import { SkipableAction } from "./action/SkipableAction";
 import { LoopActionQueue } from "./action/LoopActionQueue";
 import { ActionQueue } from "./action/ActionQueue";
@@ -11,6 +11,7 @@ import { ChoiseAction } from "./action/OptionalAction";
 import { CustomAction } from "./action/CustomAction";
 import { delay, getPoint, myUtil } from "./utils";
 import { collection, quiteToys, removeAllToys, toys } from "./colosseum";
+import { SkipableList } from "./action/SkipableList";
 
 
 /**
@@ -65,12 +66,9 @@ const collectChest = new TestAction(
  */
 const fightTower = new Action('fight-tower', 'div.tb-controls.league', 'div.tb-controls.league div.btn.glow-green.hidden div.btn-text');
 
-/**
- * confirm lose in tower
- */
-const confirmTowerLose = new SkipableAction('confirm-tower-lose', 'div.popup.tower-victory.lose', 'div.popup.tower-victory.lose div.btn.gray');
 
 const NO_CHEST_SLOT_IN_TOWER = 'NO_CHEST_SLOT_IN_TOWER'
+
 /**
  * stop tower when no slot left
  */
@@ -83,16 +81,69 @@ const removeChest = new SkipableAction(
   'remove-chest',
   'div.popup.tower-chest-open.remove',
   'div.popup.tower-chest-open.remove div.btn.glow-red',
-  [stopTower, adv]
+  [stopTower, skipableAdv]
 );
 
+/**
+ * confirm victory in tower
+ */
+const confirmVictory = new LongWaitAction('confirm--victory', 'ul.reward-box', 'ul.reward-box div.btn.blue', [removeChest]);
 
+/**
+ * confirm lose in tower
+ */
+const confirmTowerLose = new LongWaitAction('confirm-tower-lose', 'div.popup.tower-victory.lose', 'div.popup.tower-victory.lose div.btn.gray', [skipableAdv]);
+
+const fightResult = new SkipableList([confirmVictory, confirmTowerLose, skipableAdv]);
+
+/**
+ * lose tower
+ */
+const loseTower = new CustomAction("lose-tower", "div.canvas-wrapper__background.canvas-wrapper__background--battle", async(context: ActionContext) => {
+  const { baseObj: frame } = context;
+  try {
+    // 等待 canvas 元素出现并获取其句柄
+    const canvasHandle = await frame.waitForSelector('#canvas-layer1');
+    await delay(5000);
+    // 获取 canvas 元素的位置和尺寸
+    if (canvasHandle) {
+      const boundingBox = await canvasHandle.boundingBox();
+      if (boundingBox) {
+        for (let i = 1; i <= 20; i++) {
+        // 计算点击坐标，中间偏左，即最左侧的目标
+          const x = boundingBox.x + 40;
+          const y = boundingBox.y + boundingBox.height - 40;
+
+          // 在指定的 (x, y) 坐标上点击
+          await myUtil.mouseClick(x, y);
+          await myUtil.mouseMove({x, y});
+          console.log(`Clicked on canvas at (${x}, ${y})`);
+          await delay(1000);
+          const next = await frame.$('div.popup.tower-victory.lose');
+          if (next) i = 21;
+        }
+
+      } else {
+        console.error('Could not determine the bounding box of the canvas.');
+      }
+    }
+  } catch (error) {
+    console.error('Error:', error);
+  }
+});
 
 const doTower = (times: number = 1) => {
   const loopQueue = new LoopActionQueue([
-    collectChest, fightTower, confirmVictory, removeChest
+    collectChest, fightTower, fightResult
   ], times, NO_CHEST_SLOT_IN_TOWER);
   return new ActionQueue([enterTower, collection, setDeckToys, quiteToys, loopQueue, quiteScreen]);
 }
 
-export { doTower, confirmTowerLose }
+const lostTower = (times: number = 1) => {
+  const loopQueue = new LoopActionQueue([
+    fightTower, loseTower, confirmTowerLose
+  ], times, NO_CHEST_SLOT_IN_TOWER);
+  return new ActionQueue([enterTower, loopQueue, quiteScreen]);
+}
+
+export { doTower, lostTower, confirmTowerLose, confirmVictory }
