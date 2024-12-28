@@ -15,13 +15,19 @@ class SkipableList implements CanDo {
     while (!skiped) {
       await delay();
       let enabledAction = null;
+      let confirm = false;
       for (const action of this.actions) {
         const tagObj = await baseObj.$(action.selector);
         const tagObjEnable = await isEnable(tagObj);
         console.log(`skiplist test:${action.selector},tagObj=${tagObj},tagObjEnable=${tagObjEnable}`);
         if (tagObj && tagObjEnable) {
-          enabledAction = action;
-          break; // 找到第一个符合条件的动作并退出循环
+          if (action.code === 'check-new-colosseum' && !confirm) {
+            confirm = true;
+            await delay();
+          } else {
+            enabledAction = action;
+            break; // 找到第一个符合条件的动作并退出循环
+          }
         }
       }
       if (enabledAction) {

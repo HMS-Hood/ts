@@ -55,7 +55,7 @@ import { doEvent } from './event';
 				const lose = lostTower(7);
 				const colosseum = doColosseum(10);
 				const event = doEvent();
-				const roundQueue = new LoopActionQueue([event, tower], 1000);
+				const roundQueue = new LoopActionQueue([event, colosseum, tower], 1000);
 				
 				const myQueue = new ActionQueue([preDo, roundQueue]);
 

@@ -4,7 +4,7 @@ import { Action, ActionContext } from "./action/Action";
 import { ChoiseAction } from "./action/OptionalAction";
 import { CustomAction } from "./action/CustomAction";
 import { LongWaitAction } from "./action/LongWaitAction";
-import { getChest, quiteScreen, skipableAdv } from "./common";
+import { adv, getChest, quiteScreen, skipableAdv } from "./common";
 import { LoopActionQueue } from "./action/LoopActionQueue";
 import { ActionQueue } from "./action/ActionQueue";
 import { SetEventFlat } from "./action/SetEventFlag";
@@ -121,11 +121,11 @@ const attack = new Action('attack', 'div.player-set', 'div.player-set div.btn.bl
 /**
  * confirm victory
  */
-const confirmVictory = new LongWaitAction('confirm-victory', 'div.popup.event-victory.colosseum', 'div.popup.event-victory.colosseum div.btn.blue');
+const confirmVictory = new LongWaitAction('confirm-victory', 'div.popup.event-victory.colosseum:not(.loose)', 'div.popup.event-victory.colosseum:not(.loose) div.btn.blue');
 
-const fightLost = new Action('fight-lost', 'div.popup.fight-victory.lose.center', 'div.popup.fight-victory.lose.center div.btn.gray', [skipableAdv]);
+const fightLost = new Action('fight-lost', 'div.popup.loose', 'div.popup.loose div.btn.gray');
 
-const fightResult = new ChoiseList([confirmVictory, fightLost]);
+const fightResult = new ChoiseList([fightLost, confirmVictory]);
 /**
  * check new colosseum
  */
@@ -138,7 +138,7 @@ const checkNewColosseum = new Action('check-new-colosseum',
  */
 const getColosseumReward = new Action('get-colosseum-reward', 'div.popup-layer.dialog-fullscreen', 'div.popup-layer.dialog-fullscreen div.btn.green');
 
-const getReward = new SkipableList([getColosseumReward, getChest, checkNewColosseum]);
+const getReward = new SkipableList([getColosseumReward, getChest, checkNewColosseum, adv]);
 /**
  * enter colosseum from main, and do colosseum with times
  * @param frame 
