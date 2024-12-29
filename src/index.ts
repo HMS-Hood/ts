@@ -3,12 +3,14 @@ import path from 'path';
 import { delay, init, myUtil } from './utils';
 import { adv, getChest } from './common';
 import { confirmTowerLose, doTower, lostTower } from './tower';
-import { doColosseum, fightLost } from './colosseum';
+import { doColosseum } from './colosseum';
 import { ActionQueue } from './action/ActionQueue';
 import { LoopActionQueue } from './action/LoopActionQueue';
 import { SkipableList } from './action/SkipableList';
 import { doEvent } from './event';
+import { Action } from './action/Action';
 
+const fightLost = new Action('fight-lost', 'div.fight-victory.popup.lose', 'div.fight-victory.popup.lose div.btn.gray');
 // const __filename = fileURLToPath(import.meta.url);
 // const __dirname = path.dirname('d:\\personal\\ts');
 // 'button outlined white ripple js-btn-modal js-login'
@@ -16,6 +18,7 @@ import { doEvent } from './event';
 // name 'email' 'password' 'button filled primary fnt-large-2 txt-up ripple js-btn-submit'
 // 'button filled primary fnt-large-2 txt-up ripple js-btn-submit'
 // 'button filled primary btn-play txt-up ripple js-main-button js-action-after-login'
+// popup fight-victory lose center
 (async () => {
 	while(true) {
 		// Or import puppeteer from 'puppeteer-core';
