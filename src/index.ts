@@ -56,7 +56,7 @@ const fightLost = new Action('fight-lost', 'div.fight-victory.popup.lose', 'div.
 				const preDo = new SkipableList([adv, confirmTowerLose, getChest, fightLost]);
 				const tower = doTower(7);
 				const lose = lostTower(7);
-				const colosseum = doColosseum(10);
+				const colosseum = doColosseum(5);
 				const event = doEvent();
 				const roundQueue = new LoopActionQueue([event, colosseum, tower], 1000);
 				
