@@ -40,7 +40,7 @@ const quiteToys = new Action("quite-toys", "div.popup-layer.fullscreen", "div.po
 /**
  * select target in colosseum
  */
-const selectTarget = new CustomAction("select-target", "div.colosseum-info", async(context: ActionContext) => {
+const selectTarget = (location: 'left' | 'center') => new CustomAction("select-target", "div.colosseum-info", async(context: ActionContext) => {
   const { baseObj: frame } = context;
   try {
     // 等待 canvas 元素出现并获取其句柄
@@ -51,13 +51,13 @@ const selectTarget = new CustomAction("select-target", "div.colosseum-info", asy
       const boundingBox = await canvasHandle.boundingBox();
       if (boundingBox) {
         // 计算点击坐标，中间偏左，即最左侧的目标
-        const x = boundingBox.x + boundingBox.width / 5;
+        const x = boundingBox.x + boundingBox.width / (location === 'left' ? 5 : 2.2);
         const y = boundingBox.y + boundingBox.height / 2;
-
+        
         // 在指定的 (x, y) 坐标上点击
         await myUtil.mouseClick(x, y);
 
-        console.log(`Clicked on canvas at (${x}, ${y})`);
+        console.log(`Clicked on canvas at (${x}, ${y}) in (${boundingBox.x}, ${boundingBox.y}), (${boundingBox.width}, ${boundingBox.height})`);
       } else {
         console.error('Could not determine the bounding box of the canvas.');
       }
@@ -76,13 +76,13 @@ const NOT_ENOUPH_CARDS_IN_COLOSSEUM = 'NOT_ENOUPH_CARDS_IN_COLOSSEUM';
 /**
  * deploy members and toys
  */
-const setDeck = new CustomAction('set-deck', 'div.colosseum-deck', async (context: ActionContext) => {
+const setDeck = (slot: number) => new CustomAction('set-deck', 'div.colosseum-deck', async (context: ActionContext) => {
   const { baseObj: frame } = context;
   const enabledCards = await frame.$$('div.cards-list div.cards-list__slot:not(.locked) div.item-container');
   if (enabledCards.length <= 7) {
     await new SetEventFlat(NOT_ENOUPH_CARDS_IN_COLOSSEUM).doAction(context);
   }
-  for (let i = 0; i <= 3; i++) {
+  for (let i = 0; i <= slot; i++) {
     let cardsList:ElementHandle<HTMLDivElement> | null = null;
     
     while (cardsList === null) {
@@ -144,10 +144,10 @@ const getReward = new SkipableList([getColosseumReward, getChest, checkNewColoss
  * @param frame 
  * @param times count of do colosseum
  */
-const doColosseum = (times: number = 1) => {
+const doColosseum = (times: number = 1, slot: number = 3, location: 'left' | 'center' = 'left') => {
   const loopQueue = new LoopActionQueue([
     collection, toys, removeAllToys, quiteToys,
-    selectTarget, deploy, setDeck,
+    selectTarget(location), deploy, setDeck(slot),
     attack, fightResult, getReward, 
   ], times, NOT_ENOUPH_CARDS_IN_COLOSSEUM);
   return new ActionQueue([ enterColosseum, loopQueue, quiteScreen ]);

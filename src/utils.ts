@@ -1,4 +1,4 @@
-import { ElementHandle, Frame, Page, Point } from "puppeteer";
+import { ElementHandle, Page, Point } from "puppeteer";
 import { Action } from "./action/Action";
 
 const delay = (time: number = 1000) => {
@@ -23,12 +23,10 @@ const getPoint = async (element: ElementHandle<Element>): Promise<Point | undefi
 }
 
 class Util {
-  baseObj: Frame;
   page: Page;
 
-  constructor(page: Page, frame: Frame) {
+  constructor(page: Page) {
     this.page = page;
-    this.baseObj = frame;
   }
 
   mouseClick(x: number, y: number): Promise<void> {
@@ -54,8 +52,8 @@ class Util {
 
 let myUtil: Util;
 
-const init = (page: Page, frame: Frame) => {
-  myUtil = new Util(page, frame);
+const init = (page: Page) => {
+  myUtil = new Util(page);
 }
 
 export { myUtil, init, delay, isEnable, getPoint }

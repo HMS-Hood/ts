@@ -1,4 +1,3 @@
-import { Frame } from "puppeteer";
 import { Action, ActionContext } from "./action/Action";
 import { LongWaitAction } from "./action/LongWaitAction";
 import { TestAction } from "./action/TestAction";

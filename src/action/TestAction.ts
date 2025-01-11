@@ -1,4 +1,3 @@
-import { Frame } from "puppeteer";
 import { Action, ActionContext } from "./Action";
 
 /**

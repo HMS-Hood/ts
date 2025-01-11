@@ -1,10 +1,10 @@
-import { Frame, WaitForSelectorOptions } from "puppeteer";
+import { Frame, Page, WaitForSelectorOptions } from "puppeteer";
 import { delay, isEnable } from "../utils";
 import { SimpleDo } from "./SimpleDo";
 import { SetEventFlat } from "./SetEventFlag";
 
 type ActionContext = {
-  baseObj: Frame,
+  baseObj: Frame | Page,
   nextAction?: Action,
   eventFlag: Record<string, boolean>,
 }
@@ -54,6 +54,7 @@ class Action implements CanDo {
   async doAction(context: ActionContext) {
     const { baseObj } = context;
     console.log(`wait action :${this.code}`)
+    const page: Page | undefined = undefined;
     await baseObj.waitForSelector(this.selector, this.waitTimeOutOption);
     console.log(`wait action success:${this.code}`)
     await this.doClick(context);

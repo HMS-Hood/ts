@@ -1,4 +1,4 @@
-import { ElementHandle, Frame } from "puppeteer";
+import { ElementHandle, Frame, Page } from "puppeteer";
 import { Action, ActionContext } from "./action/Action";
 import { ActionQueue } from "./action/ActionQueue";
 import { CustomAction } from "./action/CustomAction";
@@ -18,7 +18,7 @@ const enterEvent = new Action('enter-event', 'div.main-controls .dgrid .dgrid-it
  * @param xPer 
  * @param yPer 
  */
-const clickEventBoss = async (baseObj: Frame, handle: ElementHandle<Element>, xPer: number, yPer: number) => {
+const clickEventBoss = async (baseObj: Frame | Page, handle: ElementHandle<Element>, xPer: number, yPer: number) => {
   const boundingBox = await handle.boundingBox();
   if (boundingBox) {
     // 计算点击坐标，中间偏左，即最左侧的目标
@@ -45,9 +45,9 @@ const clickEventBoss = async (baseObj: Frame, handle: ElementHandle<Element>, xP
 type BossLevel = 'common' | 'rare' | 'epic' | 'legendary' | 'mythic';
 
 const bossInfo: Record<BossLevel, { xPer: number, yPer: number, length: number }> = {
-  common: { xPer: 1/8, yPer: 1/3, length: 24 * 60 * 1000 },
-  rare: { xPer: 5/12, yPer: 1/3, length: 48 * 60 * 1000 },
-  epic: { xPer: 3/4, yPer: 1/3, length: 96 * 60 * 1000 },
+  common: { xPer: 1/4, yPer: 1/3, length: 24 * 60 * 1000 },
+  rare: { xPer: 1/2, yPer: 2/3, length: 48 * 60 * 1000 },
+  epic: { xPer: 7/10, yPer: 1/3, length: 96 * 60 * 1000 },
   legendary: { xPer: 14/20, yPer: 2/3, length: 200 * 60 * 1000 },
   mythic: { xPer: 1/10, yPer: 2/3, length: 480 * 60 * 1000 },
 }
@@ -55,11 +55,11 @@ const bossInfo: Record<BossLevel, { xPer: number, yPer: number, length: number }
 let currentBoss: BossLevel;
 
 const bossDate: Record<BossLevel, Date | null> = {
-  common: new Date(),
-  rare: new Date(),
-  epic: new Date(),
-  legendary: new Date(),
-  mythic: new Date(),
+  common: null,
+  rare: null,
+  epic: null,
+  legendary: null,
+  mythic: null,
 }
 
 const confirmVictory = new LongWaitAction('confirm--victory', 'ul.reward-box', 'ul.reward-box div.btn.blue');
@@ -147,7 +147,19 @@ const beginEventFight = new CustomAction('begin-event-fight', 'div.game-screen.c
 
 const confirmEventFight = new Action('confirm-event-fight', 'div.popup.fight-intro', 'div.btn.blue.attack');
 
-const doEvent = (times: number = 1) => {
+const doEvent = (bossLevel: 1 | 2 | 3 | 4 | 5) => {
+  switch(bossLevel) {
+    case 5:
+      bossDate.mythic = new Date();
+    case 4:
+      bossDate.legendary = new Date();
+    case 3:
+      bossDate.epic = new Date();
+    case 2:
+      bossDate.rare = new Date();
+    case 1:
+      bossDate.common = new Date();
+  }
   return new ActionQueue([ enterEvent, beginEventFight, quiteScreen ]);
 }
 

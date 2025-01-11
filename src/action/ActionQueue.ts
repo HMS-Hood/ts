@@ -1,4 +1,3 @@
-import { Frame } from "puppeteer";
 import { Action, ActionContext, CanDo } from "./Action";
 
 class ActionQueue implements CanDo {

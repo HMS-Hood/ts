@@ -1,4 +1,4 @@
-import { Frame, WaitForSelectorOptions } from "puppeteer";
+import { WaitForSelectorOptions } from "puppeteer";
 import { Action, ActionContext } from "./Action";
 import { delay, isEnable } from "../utils";
 
