@@ -48,7 +48,7 @@ const bossInfo: Record<BossLevel, { xPer: number, yPer: number, length: number }
   common: { xPer: 1/4, yPer: 1/3, length: 24 * 60 * 1000 },
   rare: { xPer: 1/2, yPer: 2/3, length: 48 * 60 * 1000 },
   epic: { xPer: 7/10, yPer: 1/3, length: 96 * 60 * 1000 },
-  legendary: { xPer: 14/20, yPer: 2/3, length: 200 * 60 * 1000 },
+  legendary: { xPer: 3/4, yPer: 2/3, length: 200 * 60 * 1000 },
   mythic: { xPer: 1/10, yPer: 2/3, length: 480 * 60 * 1000 },
 }
 

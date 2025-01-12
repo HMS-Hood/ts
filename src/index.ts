@@ -22,46 +22,64 @@ const fightLost = new Action('fight-lost', 'div.fight-victory.popup.lose', 'div.
 // 'button filled primary btn-play txt-up ripple js-main-button js-action-after-login'
 // popup fight-victory lose center
 (async () => {
-  const choices = [
-    { name: 'nutaku', value: 'nutaku' },
-    { name: 'original', value: 'original' },
-		{ name: 'nutaku instance', value: 'nutaku instance' },
-    { name: 'original instance', value: 'original instance' },
-  ];
-
   const question = {
     type: 'list' as const,
-    name: 'selectedOption',
-    message: '请选择一个选项:',
-    choices: choices,
+    name: 'Entry',
+    message: '请选择入口:',
+    choices: [
+			{ name: 'nutaku', value: 'nutaku' },
+			{ name: 'original', value: 'original' },
+		],
   };
 
-	const answers = await inquirer.prompt(question);
-	const selectedValue = answers.selectedOption;
+	const question1 = {
+    type: 'list' as const,
+    name: 'DoAction',
+    message: '请选择运行方式:',
+    choices: [
+			{ name: '自动执行', value: true },
+			{ name: '启动实例', value: false },
+		],
+  };
 
-	console.log(`你选择了: ${selectedValue}`);
+	const question2 = {
+    type: 'list' as const,
+    name: 'ShowMode',
+    message: '请选择显示方式:',
+    choices: [
+			{ name: '显示', value: false },
+			{ name: '后台', value: true },
+		],
+  };
+
+	const entry = (await inquirer.prompt(question)).Entry;
+	const runMode = (await inquirer.prompt(question1)).DoAction;
+	const showMode = (await inquirer.prompt(question2)).ShowMode;
+
+	console.log(`你选择了: ${entry},${runMode},${showMode}`);
+
 
 	let doLoop = true;
 	while(doLoop) {
 		// Or import puppeteer from 'puppeteer-core';
 		// 指定用户数据目录，确保路径正确并具有写入权限
-		const userDataDir = path.join(__dirname, `user_data${selectedValue}`); // 你可以自定义此路径
+		const userDataDir = path.join(__dirname, `user_data${entry}`); // 你可以自定义此路径
 
 
 		// Launch the browser and open a new blank page
 		const browser = await puppeteer.launch({
-			headless: false, // 将此选项设置为 false
+			headless: showMode, // 将此选项设置为 false
 			defaultViewport: null, // 默认视口设置为 null，这样窗口会自适应大小
 			userDataDir: userDataDir, // 使用指定的用户数据目录
 		});
 
 		const page = await browser.newPage();
 		// Navigate the page to a URL.
-		if (selectedValue.startsWith('nutaku')) {
-			await page.goto('https://www.nutaku.net/zh/games/dirty-league/play/', { timeout: 0 });
-		} else {
-			await page.goto('https://dirtyleague.com/?utm_source=forum&utm_campaign=discord_dl_direct&utm_content=discord&land=direct', { timeout: 0 });
+		const url: {[key: string]: string} = {
+			nutaku: 'https://www.nutaku.net/zh/games/dirty-league/play/',
+			original: 'https://dirtyleague.com/?utm_source=forum&utm_campaign=discord_dl_direct&utm_content=discord&land=direct',
 		}
+		await page.goto(url[entry], { timeout: 0 });
 		// await delay(20000)
 
 		let baseObj: Page | Frame | undefined;
@@ -69,8 +87,8 @@ const fightLost = new Action('fight-lost', 'div.fight-victory.popup.lose', 'div.
 		// 初始化工具类
 		init(page);
 
-		if (selectedValue.indexOf('instance') === -1) {
-			if (selectedValue.startsWith('nutaku')) {
+		if (runMode) {
+			if (entry === 'nutaku') {
 				// 等待 iframe 加载
 				const iframeHandle = await page.waitForSelector('iframe');
 
@@ -87,8 +105,8 @@ const fightLost = new Action('fight-lost', 'div.fight-victory.popup.lose', 'div.
 						const tower = doTower(7);
 						const lose = lostTower(7);
 						const colosseum = doColosseum(5);
-						const event = doEvent(3);
-						const roundQueue = new LoopActionQueue([event, tower], 1000);
+						const event = doEvent(4);
+						const roundQueue = new LoopActionQueue([event, colosseum, tower], 1000);
 						
 						const myQueue = new ActionQueue([preDo, roundQueue]);
 
@@ -114,7 +132,7 @@ const fightLost = new Action('fight-lost', 'div.fight-victory.popup.lose', 'div.
 						const waitAction = new SimpleDo(async() => {
 							await delay(10000)
 						});
-						const roundQueue = new LoopActionQueue([ event, waitAction ], 1000);
+						const roundQueue = new LoopActionQueue([ colosseum ], 1000);
 						
 						const myQueue = new ActionQueue([preDo, roundQueue]);
 
