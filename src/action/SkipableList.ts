@@ -9,7 +9,7 @@ class SkipableList implements CanDo {
   }
 
   async doAction(context: ActionContext) {
-    const { baseObj, nextAction } = context;
+    const { baseObj, nextSelector } = context;
     console.log(`wait skipable list`)
     let skiped = false;
     while (!skiped) {
@@ -33,17 +33,17 @@ class SkipableList implements CanDo {
       if (enabledAction) {
         console.log(`do skipable action =${enabledAction.code}`)
         await enabledAction.doAction(context);
-      } else if (nextAction) {
-        const nextObj = await baseObj.$(nextAction.selector);
+      } else if (nextSelector) {
+        const nextObj = await baseObj.$(nextSelector);
         const nextObjEnable = await isEnable(nextObj);
-        console.log(`nextSelector=${nextAction.selector}, nextObj=${nextObj}, nextObjEnable=${nextObjEnable}`)
+        console.log(`nextSelector=${nextSelector}, nextObj=${nextObj}, nextObjEnable=${nextObjEnable}`)
         if (nextObj && nextObjEnable) skiped = true;
       }
     }
     console.log(`wait skipable list success`)
   }
 
-  getFirstAction(): Action | undefined {
+  getFirstSelector() {
     return undefined;
   }
 }

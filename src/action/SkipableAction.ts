@@ -9,7 +9,7 @@ class SkipableAction extends Action {
   waitTimeOutOption: WaitForSelectorOptions = { timeout: 120000 };
   
   async doAction(context: ActionContext) {
-    const { baseObj, nextAction } = context;
+    const { baseObj, nextSelector } = context;
     console.log(`wait action :${this.code}`)
     let success, skiped = false;
     while (!success && !skiped) {
@@ -20,10 +20,10 @@ class SkipableAction extends Action {
       if (tagObj && tagObjEnable) {
         await this.doClick(context);
         success = true;
-      } else if (nextAction) {
-        const nextObj = await baseObj.$(nextAction.selector);
+      } else if (nextSelector) {
+        const nextObj = await baseObj.$(nextSelector);
         const nextObjEnable = await isEnable(nextObj);
-        console.log(`nextSelector=${nextAction.selector}, nextObj=${nextObj}, nextObjEnable=${nextObjEnable}`)
+        console.log(`nextSelector=${nextSelector}, nextObj=${nextObj}, nextObjEnable=${nextObjEnable}`)
         if (nextObj && nextObjEnable) skiped = true;
       }
     }

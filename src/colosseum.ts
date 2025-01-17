@@ -10,6 +10,7 @@ import { ActionQueue } from "./action/ActionQueue";
 import { SetEventFlat } from "./action/SetEventFlag";
 import { SkipableList } from "./action/SkipableList";
 import { ChoiseList } from "./action/ChoiseList";
+import { ChooseQueue } from "./action/ChooseQueue";
 
 /**
  * enter colosseum
@@ -29,18 +30,18 @@ const toys = new ChoiseAction("toys", "div.tabs__item.icn_toys", "div.tabs__item
 /**
  * remove all toys
  */
-const removeAllToys = new ChoiseAction("remove-all-toys", "div.best-set div.btn", "div.best-set div.btn.blue", 
+const removeAllToys = new ChoiseAction("remove-all-toys", "div.best-set div.btn", "div.best-set div.btn.blue",
   "div.best-set div.btn.gray");
 
 /**
  * quite collection
  */
-const quiteToys = new Action("quite-toys", "div.popup-layer.fullscreen", "div.popup-layer.fullscreen div.btn_round.icn_back"); 
+const quiteToys = new Action("quite-toys", "div.popup-layer.fullscreen", "div.popup-layer.fullscreen div.btn_round.icn_back");
 
 /**
  * select target in colosseum
  */
-const selectTarget = (location: 'left' | 'center') => new CustomAction("select-target", "div.colosseum-info", async(context: ActionContext) => {
+const selectTarget = (location: 'left' | 'center') => new CustomAction("select-target", "div.colosseum-info", async (context: ActionContext) => {
   const { baseObj: frame } = context;
   try {
     // 等待 canvas 元素出现并获取其句柄
@@ -53,7 +54,7 @@ const selectTarget = (location: 'left' | 'center') => new CustomAction("select-t
         // 计算点击坐标，中间偏左，即最左侧的目标
         const x = boundingBox.x + boundingBox.width / (location === 'left' ? 5 : 2.2);
         const y = boundingBox.y + boundingBox.height / 2;
-        
+
         // 在指定的 (x, y) 坐标上点击
         await myUtil.mouseClick(x, y);
 
@@ -78,18 +79,14 @@ const NOT_ENOUPH_CARDS_IN_COLOSSEUM = 'NOT_ENOUPH_CARDS_IN_COLOSSEUM';
  */
 const setDeck = (slot: number) => new CustomAction('set-deck', 'div.colosseum-deck', async (context: ActionContext) => {
   const { baseObj: frame } = context;
-  const enabledCards = await frame.$$('div.cards-list div.cards-list__slot:not(.locked) div.item-container');
-  if (enabledCards.length <= 7) {
-    await new SetEventFlat(NOT_ENOUPH_CARDS_IN_COLOSSEUM).doAction(context);
-  }
   for (let i = 0; i <= slot; i++) {
-    let cardsList:ElementHandle<HTMLDivElement> | null = null;
-    
+    let cardsList: ElementHandle<HTMLDivElement> | null = null;
+
     while (cardsList === null) {
       cardsList = await frame.$('div.cards-list div.cards-list__slot:not(.locked) div.item-container');
       if (cardsList === null) await delay(10000);
     }
-    
+
     const startPoint = await getPoint(cardsList);
     const deckSet = await frame.$$('div.player-set div.deck-slot');
     const endPoint = await getPoint(deckSet[i]);
@@ -139,18 +136,32 @@ const checkNewColosseum = new Action('check-new-colosseum',
 const getColosseumReward = new Action('get-colosseum-reward', 'div.popup-layer.dialog-fullscreen', 'div.popup-layer.dialog-fullscreen div.btn.green');
 
 const getReward = new SkipableList([getColosseumReward, getChest, checkNewColosseum, adv]);
+
 /**
  * enter colosseum from main, and do colosseum with times
  * @param frame 
  * @param times count of do colosseum
  */
 const doColosseum = (times: number = 1, slot: number = 3, location: 'left' | 'center' = 'left') => {
+  const fight = new ChooseQueue(
+    'div.colosseum-deck',
+    async (context: ActionContext) => {
+      const { baseObj: frame } = context;
+      const enabledCards = await frame.$$('div.cards-list div.cards-list__slot:not(.locked) div.item-container');
+      if (enabledCards.length < slot) {
+        return false;
+      }
+      return true;
+    },
+    new ActionQueue([setDeck(slot), attack, fightResult, getReward]),
+    new ActionQueue([/* 需要补充2步退出 */])
+  );
+
   const loopQueue = new LoopActionQueue([
     collection, toys, removeAllToys, quiteToys,
-    selectTarget(location), deploy, setDeck(slot),
-    attack, fightResult, getReward, 
+    selectTarget(location), deploy, fight,
   ], times, NOT_ENOUPH_CARDS_IN_COLOSSEUM);
-  return new ActionQueue([ enterColosseum, loopQueue, quiteScreen ]);
+  return new ActionQueue([enterColosseum, loopQueue, quiteScreen]);
 }
 
 export { collection, doColosseum, toys, removeAllToys, quiteToys, fightLost }

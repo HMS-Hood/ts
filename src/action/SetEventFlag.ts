@@ -12,7 +12,7 @@ class SetEventFlat implements CanDo {
     console.log(`set event flag: ${this.eventFlagName} = ${context.eventFlag[this.eventFlagName]}`);
   }
 
-  getFirstAction(): Action | undefined {
+  getFirstSelector() {
     return undefined;
   }
 }

@@ -43,11 +43,11 @@ class LoopActionQueue extends ActionQueue {
           if (j === this.canDos.length - 1) {
             // 除最后一次外的每次循环的最后一个元素，下一个元素为第一个元素
             // context.nextAction = this.canDos[0].getFirstAction();
-            await this.canDos[j].doAction({ ...context, nextAction: this.canDos[0].getFirstAction() });
+            await this.canDos[j].doAction({ ...context, nextSelector: this.canDos[0].getFirstSelector() });
           } else {
             // 普通元素，下一个元素即为队列中的下一个元素
             // context.nextAction = this.canDos[j+1].getFirstAction();
-            await this.canDos[j].doAction({ ...context, nextAction: this.canDos[j+1].getFirstAction() })
+            await this.canDos[j].doAction({ ...context, nextSelector: this.canDos[j+1].getFirstSelector() })
           }
         }
       }

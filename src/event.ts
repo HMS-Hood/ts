@@ -140,7 +140,7 @@ const beginEventFight = new CustomAction('begin-event-fight', 'div.game-screen.c
 
     expireBoss = getExpireBoss();
 
-    await skipableAdv.doAction({ ...context, nextAction: quiteScreen });
+    await skipableAdv.doAction({ ...context, nextSelector: quiteScreen.selector });
   }
 
 });

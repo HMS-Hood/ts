@@ -1,6 +1,9 @@
 import { delay, isEnable } from "../utils";
 import { Action, ActionContext, CanDo } from "./Action";
 
+/**
+ * 可选的动作列表
+ */
 class ChoiseList implements CanDo {
   actions: Action[];
 
@@ -9,8 +12,8 @@ class ChoiseList implements CanDo {
   }
 
   async doAction(context: ActionContext) {
-    const { baseObj, nextAction } = context;
-    console.log(`wait skipable list`)
+    const { baseObj, nextSelector } = context;
+    console.log(`wait ChoiseList`)
     let skiped = false;
     let success = false
     while (!skiped && !success) {
@@ -29,17 +32,17 @@ class ChoiseList implements CanDo {
         console.log(`do skipable action =${enabledAction.code}`)
         await enabledAction.doAction(context);
         success = true;
-      } else if (nextAction) {
-        const nextObj = await baseObj.$(nextAction.selector);
+      } else if (nextSelector) {
+        const nextObj = await baseObj.$(nextSelector);
         const nextObjEnable = await isEnable(nextObj);
-        console.log(`nextSelector=${nextAction.selector}, nextObj=${nextObj}, nextObjEnable=${nextObjEnable}`)
+        console.log(`nextSelector=${nextSelector}, nextObj=${nextObj}, nextObjEnable=${nextObjEnable}`)
         if (nextObj && nextObjEnable) skiped = true;
       }
     }
-    console.log(`wait skipable list success`)
+    console.log(`wait ChoiseList success`)
   }
 
-  getFirstAction(): Action | undefined {
+  getFirstSelector() {
     return undefined;
   }
 }

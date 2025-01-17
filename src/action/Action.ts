@@ -5,13 +5,13 @@ import { SetEventFlat } from "./SetEventFlag";
 
 type ActionContext = {
   baseObj: Frame | Page,
-  nextAction?: Action,
+  nextSelector?: string,
   eventFlag: Record<string, boolean>,
 }
 
 interface CanDo {
   doAction(context: ActionContext): Promise<void>;
-  getFirstAction(): Action | undefined;
+  getFirstSelector(): string | undefined;
 }
 
 /**
@@ -47,14 +47,13 @@ class Action implements CanDo {
     this.subActions = subActions;
   }
 
-  getFirstAction() {
-    return this;
+  getFirstSelector() {
+    return this.selector;
   }
 
   async doAction(context: ActionContext) {
     const { baseObj } = context;
     console.log(`wait action :${this.code}`)
-    const page: Page | undefined = undefined;
     await baseObj.waitForSelector(this.selector, this.waitTimeOutOption);
     console.log(`wait action success:${this.code}`)
     await this.doClick(context);

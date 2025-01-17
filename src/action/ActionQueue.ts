@@ -7,10 +7,10 @@ class ActionQueue implements CanDo {
     this.canDos = actions;
   }
 
-  getFirstAction(): Action | undefined {
+  getFirstSelector() {
     if (this.canDos.length === 0) return undefined;
     const [ firstCanDo ] = this.canDos;
-    return firstCanDo.getFirstAction();
+    return firstCanDo.getFirstSelector();
   }
 
   async doAction(context: ActionContext) {
@@ -20,7 +20,7 @@ class ActionQueue implements CanDo {
         await this.canDos[i].doAction(context);
       } else {
         // context.nextAction = this.canDos[i+1].getFirstAction();
-        await this.canDos[i].doAction({ ...context, nextAction: this.canDos[i+1].getFirstAction() });
+        await this.canDos[i].doAction({ ...context, nextSelector: this.canDos[i+1].getFirstSelector() });
       }
     }
   }

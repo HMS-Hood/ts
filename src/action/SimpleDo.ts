@@ -10,7 +10,7 @@ class SimpleDo implements CanDo {
   async doAction(context: ActionContext) {
     await this.act(context);
   }
-  getFirstAction(): Action | undefined {
+  getFirstSelector() {
     return undefined;
   }
 }
