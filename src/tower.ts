@@ -110,8 +110,8 @@ const loseTower = new CustomAction("lose-tower", "div.canvas-wrapper__background
       if (boundingBox) {
         for (let i = 1; i <= 20; i++) {
         // 计算点击坐标，中间偏左，即最左侧的目标
-          const x = boundingBox.x + 40;
-          const y = boundingBox.y + boundingBox.height - 40;
+          const x = boundingBox.x + boundingBox.width * 1 / 20; // 1/10 auto
+          const y = boundingBox.y + boundingBox.height * 17 / 18;
 
           // 在指定的 (x, y) 坐标上点击
           await myUtil.mouseClick(x, y);

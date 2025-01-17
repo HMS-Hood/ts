@@ -3,6 +3,8 @@ import { delay, isEnable } from "../utils";
 
 /**
  * 打开箱子的操作，除了固定selector外，由于需要在同样的界面上点击两次同样的按钮，因此做特殊逻辑
+ * 
+ * 宝石 equip-box can-flip
  */
 class OpenChestAction extends Action {
   constructor() {
