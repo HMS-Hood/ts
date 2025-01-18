@@ -148,13 +148,18 @@ const doColosseum = (times: number = 1, slot: number = 3, location: 'left' | 'ce
     async (context: ActionContext) => {
       const { baseObj: frame } = context;
       const enabledCards = await frame.$$('div.cards-list div.cards-list__slot:not(.locked) div.item-container');
-      if (enabledCards.length < slot) {
+      console.log(`enabledCards length=${enabledCards.length}`)
+      if (enabledCards.length <= slot) {
         return false;
       }
       return true;
     },
     new ActionQueue([setDeck(slot), attack, fightResult, getReward]),
-    new ActionQueue([/* 需要补充2步退出 */])
+    new ActionQueue([
+      new Action('quite-slot', 'div.popup-layer.fullscreen.colosseum-deck', 'div.btn_round.icn_back.back'),
+      new Action('quite-attack', 'div.popup,choose-rival', 'div.btn_round.icn_x-icon.close'),
+      new SetEventFlat(NOT_ENOUPH_CARDS_IN_COLOSSEUM),
+    ])
   );
 
   const loopQueue = new LoopActionQueue([

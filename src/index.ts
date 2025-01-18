@@ -106,7 +106,7 @@ const fightLost = new Action('fight-lost', 'div.fight-victory.popup.lose', 'div.
 						const lose = lostTower(7);
 						const colosseum = doColosseum(5);
 						const event = doEvent(5);
-						const roundQueue = new LoopActionQueue([event, colosseum, tower], 1000);
+						const roundQueue = new LoopActionQueue([colosseum, tower], 1000);
 						
 						const myQueue = new ActionQueue([preDo, roundQueue]);
 
