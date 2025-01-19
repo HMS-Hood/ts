@@ -125,14 +125,14 @@ const fightLost = new Action('fight-lost', 'div.fight-victory.popup.lose', 'div.
 				try {
 					if (baseObj) {
 						const preDo = new SkipableList([adv, confirmTowerLose, getChest, fightLost]);
-						const tower = doTower(7);
+						const tower = doTower(7, true, 2);
 						const lose = lostTower(7);
 						const colosseum = doColosseum(5, 1, 'center');
 						const event = doEvent(2);
 						const waitAction = new SimpleDo(async() => {
 							await delay(10000)
 						});
-						const roundQueue = new LoopActionQueue([ colosseum ], 1000);
+						const roundQueue = new LoopActionQueue([ tower ], 1000);
 						
 						const myQueue = new ActionQueue([preDo, roundQueue]);
 

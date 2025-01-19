@@ -26,7 +26,7 @@ const deck = new ChoiseAction("deck", "div.tabs__item.icn_decks", "div.tabs__ite
 /**
  * set deck toys
  */
-const setDeckToys = new CustomAction('set-deck-toys', 'div.player-set', async (context: ActionContext) => {
+const setDeckToys = (decksCount: number) => new CustomAction('set-deck-toys', 'div.player-set', async (context: ActionContext) => {
   const { baseObj: frame } = context;
   await deck.doAction(context);
   const apObj = await frame.$('div.player-set div.hp.icn_fist.icn_28');
@@ -38,7 +38,7 @@ const setDeckToys = new CustomAction('set-deck-toys', 'div.player-set', async (c
   await removeAllToys.doAction(context); 
   await deck.doAction(context);
   const deckSet = await frame.$$('div.player-set div.deck-slot');
-  for (let i = 0; i <= 4; i++) {
+  for (let i = 0; i <= decksCount; i++) {
     const endPoint = await getPoint(deckSet[i]);
     if (endPoint) {
       await delay()
@@ -64,7 +64,6 @@ const collectChest = new TestAction(
  * do tower
  */
 const fightTower = new Action('fight-tower', 'div.tb-controls.league', 'div.tb-controls.league div.btn.glow-green.hidden div.btn-text');
-
 
 const NO_CHEST_SLOT_IN_TOWER = 'NO_CHEST_SLOT_IN_TOWER'
 
@@ -108,18 +107,25 @@ const loseTower = new CustomAction("lose-tower", "div.canvas-wrapper__background
     if (canvasHandle) {
       const boundingBox = await canvasHandle.boundingBox();
       if (boundingBox) {
+        let setAuto = false;
         for (let i = 1; i <= 20; i++) {
         // 计算点击坐标，中间偏左，即最左侧的目标
           const x = boundingBox.x + boundingBox.width * 1 / 20; // 1/10 auto
+          const autoX = boundingBox.x + boundingBox.width * 1 / 10;
           const y = boundingBox.y + boundingBox.height * 17 / 18;
 
           // 在指定的 (x, y) 坐标上点击
           await myUtil.mouseClick(x, y);
-          await myUtil.mouseMove({x, y});
+          // await myUtil.mouseMove({x, y});
           console.log(`Clicked on canvas at (${x}, ${y})`);
-          await delay(1000);
+          await delay(3000);
           const next = await frame.$('div.popup.tower-victory.lose');
           if (next) i = 21;
+          else if (i >= 5 && !setAuto) {
+            console.log("set auto")
+            await myUtil.mouseClick(autoX, y);
+            setAuto = true;
+          }
         }
 
       } else {
@@ -131,11 +137,30 @@ const loseTower = new CustomAction("lose-tower", "div.canvas-wrapper__background
   }
 });
 
-const doTower = (times: number = 1) => {
-  const loopQueue = new LoopActionQueue([
+const limitedFightTower = new CustomAction('fight-tower', 'div.tb-controls.league', async(context: ActionContext) => {
+  const { baseObj } = context;
+  
+  const progressObj = await baseObj.$('div.tb-controls.league div.progress__estimate.icn_cup_yellow');
+  const data = await progressObj?.evaluate(el => el.innerHTML);
+  debugger
+  const curData = data?.replace(/\"(\n*)\".*?\" \/ \".*?\"\n*\"/s, "$1");
+
+  if (curData && Number.parseInt(curData) >= 250) {
+    for (let i = 0; i < 8; i+=1) {
+      await loseTower.doAction(context);
+    }
+  }
+})
+
+const doTower = (times: number = 1, limit: boolean = false, decksCount: number = 4) => {
+  const loopQueue = limit ? new LoopActionQueue([
+    collectChest, limitedFightTower, fightTower, fightResult
+  ], times, NO_CHEST_SLOT_IN_TOWER)
+  : 
+  new LoopActionQueue([
     collectChest, fightTower, fightResult
   ], times, NO_CHEST_SLOT_IN_TOWER);
-  return new ActionQueue([enterTower, collection, setDeckToys, quiteToys, loopQueue, quiteScreen]);
+  return new ActionQueue([enterTower, collection, setDeckToys(decksCount), quiteToys, loopQueue, quiteScreen]);
 }
 
 const lostTower = (times: number = 1) => {
