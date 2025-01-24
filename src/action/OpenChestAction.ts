@@ -24,21 +24,21 @@ class OpenChestAction extends Action {
     let success = false;
     while (!success) {
       await delay();
-      console.log(`do action try:${this.code}`)
+      console.log(`do open chest action try:${this.code}`)
       const tagObj = await baseObj.$(this.selector);
       const tagObjEnable = await isEnable(tagObj);
       const clickObj = await baseObj.$(this.clickSelector);
       const clickObjEnable = await isEnable(clickObj);
       if (tagObj && tagObjEnable && clickObj && clickObjEnable) {
-        console.log(`do action try:1`)
+        console.log(`do open chest action try:1`)
         try {
           await clickObj.click();
         } catch(e) {
           console.log(e);
         }
-        console.log(`do action success:${this.code}`)
+        console.log(`do open chest action success:${this.code}`)
       } else {
-        console.log(`do action try:2`)
+        console.log(`do aopen chest action try:2`)
         // 当外部条件不满足时才结束，正常情况下是执行2次点击操作
         if (!tagObj || !tagObjEnable) success = true;
       }

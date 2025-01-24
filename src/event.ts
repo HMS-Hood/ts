@@ -2,53 +2,34 @@ import { ElementHandle, Frame, Page } from "puppeteer";
 import { Action, ActionContext } from "./action/Action";
 import { ActionQueue } from "./action/ActionQueue";
 import { CustomAction } from "./action/CustomAction";
-import { adv, skipableAdv, quiteScreen } from "./common";
+import { adv, skipableAdv, quiteScreen, getChest } from "./common";
 import { delay, myUtil } from "./utils";
 import { LongWaitAction } from "./action/LongWaitAction";
+import { TestAction } from "./action/TestAction";
 
+// event-reward btn green
 /**
  * enter event
  */
 const enterEvent = new Action('enter-event', 'div.main-controls .dgrid .dgrid-item:nth-of-type(1) .ditem__img');
 
 /**
- * 选择event boss
- * @param baseObj 
- * @param handle 
- * @param xPer 
- * @param yPer 
+ * open chest slots in tower
  */
-const clickEventBoss = async (baseObj: Frame | Page, handle: ElementHandle<Element>, xPer: number, yPer: number) => {
-  const boundingBox = await handle.boundingBox();
-  if (boundingBox) {
-    // 计算点击坐标，中间偏左，即最左侧的目标
-    const x = boundingBox.x + boundingBox.width * xPer;
-    const y = boundingBox.y + boundingBox.height * yPer;
-
-    let needClick = true;
-    while(needClick) {
-      // 在指定的 (x, y) 坐标上点击
-      await myUtil.mouseClick(x, y);
-      const cfSelector = await baseObj.$(confirmEventFight.selector);
-      if (cfSelector) {
-        needClick = false;
-      } else {
-        await delay(3000);
-      }
-    }
-    console.log(`Clicked on canvas at (${x}, ${y})`);
-  } else {
-    console.error('Could not determine the bounding box of the canvas.');
-  }
-}
+const collectEventChest = new TestAction(
+  'chest-list',
+  'div.event-reward',
+  'div.event-reward div.btn.green',
+  [ getChest ]
+);
 
 type BossLevel = 'common' | 'rare' | 'epic' | 'legendary' | 'mythic';
 
 const bossInfo: Record<BossLevel, { xPer: number, yPer: number, length: number }> = {
-  common: { xPer: 1/4, yPer: 1/3, length: 24 * 60 * 1000 },
-  rare: { xPer: 1/2, yPer: 2/3, length: 48 * 60 * 1000 },
-  epic: { xPer: 7/10, yPer: 1/3, length: 96 * 60 * 1000 },
-  legendary: { xPer: 3/4, yPer: 2/3, length: 200 * 60 * 1000 },
+  common: { xPer: 5/12, yPer: 1/3, length: 24 * 60 * 1000 },
+  rare: { xPer: 11/20, yPer: 1/3, length: 48 * 60 * 1000 },
+  epic: { xPer: 5/6, yPer: 2/3, length: 96 * 60 * 1000 },
+  legendary: { xPer: 7/12, yPer: 2/3, length: 200 * 60 * 1000 },
   mythic: { xPer: 1/4, yPer: 2/3, length: 480 * 60 * 1000 },
 }
 
@@ -160,7 +141,7 @@ const doEvent = (bossLevel: 1 | 2 | 3 | 4 | 5) => {
     case 1:
       bossDate.common = new Date();
   }
-  return new ActionQueue([ enterEvent, beginEventFight, quiteScreen ]);
+  return new ActionQueue([ enterEvent, collectEventChest, beginEventFight, quiteScreen ]);
 }
 
 export { doEvent }

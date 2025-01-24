@@ -16,7 +16,7 @@ class SkipableAction extends Action {
       await delay();
       const tagObj = await baseObj.$(this.selector);
       const tagObjEnable = await isEnable(tagObj);
-      console.log(`tagObj=${tagObj}, tagObjEnable=${tagObjEnable}`)
+      console.log(`selector=${this.selector}, tagObj=${tagObj}, tagObjEnable=${tagObjEnable}`)
       if (tagObj && tagObjEnable) {
         await this.doClick(context);
         success = true;

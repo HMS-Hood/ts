@@ -33,14 +33,14 @@ class Action implements CanDo {
    */
   clickSelector: string;
 
-  subActions?: (Action | SimpleDo | SetEventFlat)[];
+  subActions?: CanDo[];
 
   /**
    * 等待超时设置
    */
   waitTimeOutOption: WaitForSelectorOptions = { timeout: 30000 };
 
-  constructor(code: string, selector: string, clickSelector?: string, subActions?: (Action | SimpleDo | SetEventFlat)[]) {
+  constructor(code: string, selector: string, clickSelector?: string, subActions?: CanDo[]) {
     this.code = code;
     this.selector = selector;
     this.clickSelector = clickSelector??selector;

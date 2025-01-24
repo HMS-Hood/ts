@@ -12,16 +12,17 @@ class SkipableList implements CanDo {
     const { baseObj, nextSelector } = context;
     console.log(`wait skipable list`)
     let skiped = false;
+    let confirm = false;
     while (!skiped) {
       await delay();
       let enabledAction = null;
-      let confirm = false;
       for (const action of this.actions) {
         const tagObj = await baseObj.$(action.selector);
         const tagObjEnable = await isEnable(tagObj);
         console.log(`skiplist test:${action.selector},tagObj=${tagObj},tagObjEnable=${tagObjEnable}`);
         if (tagObj && tagObjEnable) {
           if (action.code === 'check-new-colosseum' && !confirm) {
+            console.log('confirm')
             confirm = true;
             await delay();
           } else {

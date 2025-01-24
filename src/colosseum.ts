@@ -1,10 +1,10 @@
 import { ElementHandle } from "puppeteer";
-import { myUtil, delay, getPoint } from "./utils";
+import { myUtil, delay, getPoint, isEnable } from "./utils";
 import { Action, ActionContext } from "./action/Action";
 import { ChoiseAction } from "./action/OptionalAction";
 import { CustomAction } from "./action/CustomAction";
 import { LongWaitAction } from "./action/LongWaitAction";
-import { adv, getChest, quiteScreen, skipableAdv } from "./common";
+import { adv, getChest, quiteScreen } from "./common";
 import { LoopActionQueue } from "./action/LoopActionQueue";
 import { ActionQueue } from "./action/ActionQueue";
 import { SetEventFlat } from "./action/SetEventFlag";
@@ -126,9 +126,59 @@ const fightResult = new ChoiseList([fightLost, confirmVictory]);
 /**
  * check new colosseum
  */
-const checkNewColosseum = new Action('check-new-colosseum',
+const checkNewColosseum = new CustomAction('check-new-colosseum',
   'div.colosseum-map__arenas div.colosseum-map__item:not(.locked) div.colosseum-map__arena',
-  'div.colosseum-map__arenas div.colosseum-map__item:not(.locked) div.colosseum-map__arena');
+  async(context: ActionContext) => {
+    const code = 'check-new-colosseum';
+    const selector = 'div.colosseum-map__arenas div.colosseum-map__item:not(.locked) div.colosseum-map__arena';
+    const clickSelector = 'div.colosseum-map__arenas div.colosseum-map__item:not(.locked) div.colosseum-map__arena';
+    const { baseObj } = context;
+    let success = false;
+    let done = false;
+    while (!success) {
+      await delay();
+      console.log(`do action try:${code}`)
+      const tagObj = await baseObj.$(selector);
+      const tagObjEnable = await isEnable(tagObj);
+      const clickObj = await baseObj.$(clickSelector);
+      const clickObjEnable = await isEnable(clickObj);
+      if (tagObj && tagObjEnable && clickObj && clickObjEnable) {
+        console.log(`do checkNewColosseum try:1`)
+        try {
+          let needClick = true;
+          while(needClick) {
+            const obj = await baseObj.$(clickSelector);
+            if (obj) {
+              const boundingBox = await obj.boundingBox();
+              if (boundingBox) {
+                // 计算点击坐标，中间偏左，即最左侧的目标
+                const x = boundingBox.x + boundingBox.width / 3;
+                const y = boundingBox.y + boundingBox.height / 3;
+            
+                // 在指定的 (x, y) 坐标上点击
+                console.log(`do click: x=${x}, y=${y}`)
+                await myUtil.mouseClick(x, y);
+                const cfSelector = await baseObj.$(clickSelector);
+                await delay(3000);
+                if (!cfSelector) {
+                  needClick = false;
+                }
+              }
+            } else {
+              needClick = false;
+            }
+          }
+        } catch(e) {
+          console.log(e);
+        }
+        done = true;
+        console.log(`do checkNewColosseum success:${code}`)
+      } else {
+        console.log(`do checkNewColosseum try:2`)
+        if (done) success = true;
+      }
+    }
+  });
 
 /**
  * get colosseum reward

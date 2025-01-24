@@ -1,7 +1,7 @@
 import { Action, ActionContext } from "./action/Action";
 import { LongWaitAction } from "./action/LongWaitAction";
 import { TestAction } from "./action/TestAction";
-import { skipableAdv, getChest, quiteScreen } from "./common";
+import { adv, skipableAdv, newSlotAdv, getChest, quiteScreen } from "./common";
 import { SkipableAction } from "./action/SkipableAction";
 import { LoopActionQueue } from "./action/LoopActionQueue";
 import { ActionQueue } from "./action/ActionQueue";
@@ -61,6 +61,16 @@ const collectChest = new TestAction(
 );
 
 /**
+ * get reward for 5 victory
+ */
+const getCollection = new TestAction(
+  'get-collection',
+  'div.tb-controls.league',
+  'div.tb-controls.league div.tb-reward__btn.btn.blue',
+  [ getChest ]
+);
+
+/**
  * do tower
  */
 const fightTower = new Action('fight-tower', 'div.tb-controls.league', 'div.tb-controls.league div.btn.glow-green.hidden div.btn-text');
@@ -79,55 +89,59 @@ const removeChest = new SkipableAction(
   'remove-chest',
   'div.popup.tower-chest-open.remove',
   'div.popup.tower-chest-open.remove div.btn.glow-red',
-  [stopTower, skipableAdv]
+  // [stopTower, skipableAdv]
+  [ stopTower, new SkipableList([ adv, newSlotAdv ]) ]
 );
 
 /**
  * confirm victory in tower
  */
-const confirmVictory = new LongWaitAction('confirm--victory', 'ul.reward-box', 'ul.reward-box div.btn.blue', [removeChest]);
+const confirmVictory = new LongWaitAction('confirm--victory', 'div.popup.tower-victory:not(.lose)', 'div.popup.tower-victory:not(.lose) div.btn.blue', [new SkipableList([ adv, removeChest ])]);
 
 /**
  * confirm lose in tower
  */
 const confirmTowerLose = new LongWaitAction('confirm-tower-lose', 'div.popup.tower-victory.lose', 'div.popup.tower-victory.lose div.btn.gray', [skipableAdv]);
 
-const fightResult = new SkipableList([confirmVictory, confirmTowerLose, skipableAdv]);
+const fightResult = new SkipableList([confirmVictory, confirmTowerLose, adv]);
 
 /**
  * lose tower
  */
-const loseTower = new CustomAction("lose-tower", "div.canvas-wrapper__background.canvas-wrapper__background--battle", async(context: ActionContext) => {
+const getLoseTower = (auto: boolean, doVictory: boolean = false) => new CustomAction("lose-tower", "div.canvas-wrapper__background.canvas-wrapper__background--battle", async(context: ActionContext) => {
   const { baseObj: frame } = context;
   try {
     // 等待 canvas 元素出现并获取其句柄
     const canvasHandle = await frame.waitForSelector('#canvas-layer1');
-    await delay(5000);
+    await delay(8000);
     // 获取 canvas 元素的位置和尺寸
     if (canvasHandle) {
       const boundingBox = await canvasHandle.boundingBox();
       if (boundingBox) {
-        let setAuto = false;
-        for (let i = 1; i <= 20; i++) {
-        // 计算点击坐标，中间偏左，即最左侧的目标
-          const x = boundingBox.x + boundingBox.width * 1 / 20; // 1/10 auto
-          const autoX = boundingBox.x + boundingBox.width * 1 / 10;
-          const y = boundingBox.y + boundingBox.height * 17 / 18;
-
+        const x = boundingBox.x + boundingBox.width * 1 / 20;
+        const autoX = boundingBox.x + boundingBox.width * 1 / 10;
+        const y = boundingBox.y + boundingBox.height * 17 / 18;
+        if (doVictory) {
+          console.log("do victory")
+          await myUtil.mouseClick(autoX, y);
+          await fightResult.doAction(context);
+          return;
+        }
+        if (auto) {
+          console.log("set auto")
+          await myUtil.mouseClick(autoX, y);
+          auto = false;
+        }
+        for (let i = 1; i <= 10; i++) {
           // 在指定的 (x, y) 坐标上点击
           await myUtil.mouseClick(x, y);
           // await myUtil.mouseMove({x, y});
           console.log(`Clicked on canvas at (${x}, ${y})`);
           await delay(3000);
-          const next = await frame.$('div.popup.tower-victory.lose');
-          if (next) i = 21;
-          else if (i >= 5 && !setAuto) {
-            console.log("set auto")
-            await myUtil.mouseClick(autoX, y);
-            setAuto = true;
-          }
+          const next = await frame.$('div.popup.tower-victory');
+          if (next) i = 10;
         }
-
+        await fightResult.doAction(context);
       } else {
         console.error('Could not determine the bounding box of the canvas.');
       }
@@ -140,32 +154,43 @@ const loseTower = new CustomAction("lose-tower", "div.canvas-wrapper__background
 const limitedFightTower = new CustomAction('fight-tower', 'div.tb-controls.league', async(context: ActionContext) => {
   const { baseObj } = context;
   
-  const progressObj = await baseObj.$('div.tb-controls.league div.progress__estimate.icn_cup_yellow');
+  let progressObj = await baseObj.$('div.tb-controls.league div.progress__estimate.icn_cup_yellow');
   const data = await progressObj?.evaluate(el => el.innerHTML);
-  debugger
-  const curData = data?.replace(/\"(\n*)\".*?\" \/ \".*?\"\n*\"/s, "$1");
+  const initData = data?.replace(/\"(\n*)\".*?\" \/ \".*?\"\n*\"/s, "$1");
 
-  if (curData && Number.parseInt(curData) >= 250) {
+  let auto = true;
+  if (initData && Number.parseInt(initData) >= 240) {
     for (let i = 0; i < 8; i+=1) {
-      await loseTower.doAction(context);
+      // progressObj = await baseObj.$('div.tb-controls.league div.progress__estimate.icn_cup_yellow');
+      // const curDataStr = await progressObj?.evaluate(el => el.innerHTML);
+      // const curData = curDataStr?.replace(/\"(\n*)\".*?\" \/ \".*?\"\n*\"/s, "$1");
+      // if (Number.parseInt(curData??'0') < Number.parseInt(initData)) auto =false;
+      await fightTower.doAction(context);
+      await getLoseTower(auto).doAction(context);
+      auto = false;
     }
+    await fightTower.doAction(context);
+    await getLoseTower(auto, true).doAction(context)
   }
 })
 
 const doTower = (times: number = 1, limit: boolean = false, decksCount: number = 4) => {
-  const loopQueue = limit ? new LoopActionQueue([
-    collectChest, limitedFightTower, fightTower, fightResult
-  ], times, NO_CHEST_SLOT_IN_TOWER)
-  : 
-  new LoopActionQueue([
-    collectChest, fightTower, fightResult
-  ], times, NO_CHEST_SLOT_IN_TOWER);
-  return new ActionQueue([enterTower, collection, setDeckToys(decksCount), quiteToys, loopQueue, quiteScreen]);
+  if (limit) {
+    const loopQueue = new LoopActionQueue([
+      collectChest, getCollection, limitedFightTower, fightTower, fightResult
+    ], times, NO_CHEST_SLOT_IN_TOWER);
+    return new ActionQueue([enterTower, loopQueue, quiteScreen]);
+  } else {
+    const loopQueue = new LoopActionQueue([
+      collectChest, getCollection, fightTower, fightResult
+    ], times, NO_CHEST_SLOT_IN_TOWER);
+    return new ActionQueue([enterTower, collection, setDeckToys(decksCount), quiteToys, loopQueue, quiteScreen]);
+  }
 }
 
 const lostTower = (times: number = 1) => {
   const loopQueue = new LoopActionQueue([
-    fightTower, loseTower, confirmTowerLose
+    fightTower, confirmTowerLose
   ], times, NO_CHEST_SLOT_IN_TOWER);
   return new ActionQueue([enterTower, loopQueue, quiteScreen]);
 }
